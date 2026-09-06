@@ -1,2329 +1,507 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
-    <title>SkyShop Ethiopia</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <style>
-        :root {
-            --bg: #f4f7f9;
-            --surface: #ffffff;
-            --surface-hover: #f0f4f8;
-            --text: #1e2a3a;
-            --text-secondary: #4a5a6a;
-            --border: #d0d7de;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
-            --shadow-hover: 0 14px 40px rgba(0, 0, 0, 0.12);
-            --green: #1a8a4a;
-            --green-dark: #136035;
-            --green-light: #e8f5ee;
-            --yellow: #fcd116;
-            --red: #ef4135;
-            --gold: #f5a623;
-            --card-radius: 16px;
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --header-bg: linear-gradient(135deg, #136035 0%, #1a8a4a 100%);
-            --header-text: #fff;
-            --modal-bg: #fff;
-            --input-bg: #fff;
-            --input-border: #d0d7de;
-            --admin-header-bg: #f8fafc;
-        }
-        body.dark {
-            --bg: #121826;
-            --surface: #1e293b;
-            --surface-hover: #2d3a4f;
-            --text: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --border: #334155;
-            --shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-            --shadow-hover: 0 14px 40px rgba(0, 0, 0, 0.6);
-            --green: #34d399;
-            --green-dark: #10b981;
-            --green-light: #1e3a2a;
-            --yellow: #fbbf24;
-            --red: #f87171;
-            --gold: #f59e0b;
-            --header-bg: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            --header-text: #e2e8f0;
-            --modal-bg: #1e293b;
-            --input-bg: #1e293b;
-            --input-border: #334155;
-            --admin-header-bg: #1e293b;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-            transition: background 0.3s, color 0.3s;
-        }
-        a { text-decoration: none; color: inherit; }
-        img { max-width: 100%; display: block; }
-        button {
-            cursor: pointer;
-            font-family: inherit;
-            border: none;
-            outline: none;
-            background: none;
-        }
-        input, select, textarea {
-            font-family: inherit;
-            outline: none;
-            border: 1px solid var(--input-border);
-            border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 0.95rem;
-            width: 100%;
-            transition: border 0.2s, background 0.3s;
-            background: var(--input-bg);
-            color: var(--text);
-        }
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--green);
-            box-shadow: 0 0 0 3px rgba(26, 138, 74, 0.15);
-        }
-        textarea { resize: vertical; min-height: 70px; }
-        .container { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--green); border-radius: 10px; }
-        header {
-            background: var(--header-bg);
-            color: var(--header-text);
-            padding: 12px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-            transition: background 0.3s;
-        }
-        .header-inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-        .logo-area {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .logo-area i { font-size: 2rem; color: var(--yellow); }
-        .logo-area h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; }
-        .logo-area h1 span { color: var(--yellow); }
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .header-actions button {
-            color: var(--header-text);
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        .header-actions button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.03);
-        }
-        .lang-btn i, .theme-btn i { font-size: 1rem; }
-        .cart-btn { position: relative; }
-        .cart-badge {
-            background: var(--red);
-            color: #fff;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            border: 2px solid var(--green);
-        }
-        .admin-shortcut {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 1.1rem;
-            transition: var(--transition);
-            padding: 4px 8px;
-            border-radius: 8px;
-        }
-        .admin-shortcut:hover { color: #fff; background: rgba(255, 255, 255, 0.1); }
-        .hero {
-            background: var(--green-light);
-            padding: 40px 0 30px;
-            border-bottom: 4px solid var(--yellow);
-            text-align: center;
-            transition: background 0.3s;
-        }
-        .hero h2 {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--green-dark);
-            margin-bottom: 4px;
-        }
-        .hero h2 i { color: var(--gold); margin: 0 6px; }
-        .hero p {
-            font-size: 1.05rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .hero .tag {
-            display: inline-block;
-            background: var(--yellow);
-            color: #1e2a3a;
-            padding: 4px 18px;
-            border-radius: 30px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            margin-top: 10px;
-        }
-        .category-tabs {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            padding: 20px 0 10px;
-        }
-        .category-tabs button {
-            padding: 10px 26px;
-            border-radius: 40px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            background: var(--surface);
-            color: var(--text);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-            border: 2px solid transparent;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .category-tabs button:hover {
-            border-color: var(--green);
-            transform: translateY(-2px);
-        }
-        .category-tabs button.active {
-            background: var(--green);
-            color: #fff;
-            border-color: var(--green);
-            box-shadow: 0 4px 14px rgba(26, 138, 74, 0.3);
-        }
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-            gap: 24px;
-            padding: 20px 0 40px;
-        }
-        .product-card {
-            background: var(--surface);
-            border-radius: var(--card-radius);
-            overflow: hidden;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            border: 1px solid var(--border);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-        }
-        .product-card:hover {
-            transform: translateY(-6px);
-            box-shadow: var(--shadow-hover);
-        }
-        .product-img {
-            height: 190px;
-            background: var(--surface-hover);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            position: relative;
-        }
-        .product-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .product-img .no-img {
-            color: var(--text-secondary);
-            font-size: 2.4rem;
-            opacity: 0.3;
-        }
-        .product-body {
-            padding: 16px 18px 18px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .product-body .cat-tag {
-            font-size: 0.65rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            color: var(--green);
-            background: var(--green-light);
-            padding: 2px 12px;
-            border-radius: 20px;
-            display: inline-block;
-            align-self: flex-start;
-            margin-bottom: 6px;
-        }
-        .product-body h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
-        .product-body .price {
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: var(--green-dark);
-            margin: 4px 0 6px;
-        }
-        .product-body .price span {
-            font-weight: 400;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-        }
-        .product-body .desc {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            flex: 1;
-            margin-bottom: 12px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .product-body .actions {
-            display: flex;
-            gap: 8px;
-            margin-top: auto;
-        }
-        .product-body .actions button {
-            flex: 1;
-            padding: 8px 0;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 0.8rem;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .btn-add { background: var(--green); color: #fff; }
-        .btn-add:hover { background: var(--green-dark); transform: scale(1.02); }
-        .btn-buy { background: var(--yellow); color: #1e2a3a; }
-        .btn-buy:hover { background: #e6b800; transform: scale(1.02); }
-        .btn-outline {
-            background: transparent;
-            color: var(--green);
-            border: 2px solid var(--green);
-        }
-        .btn-outline:hover { background: var(--green); color: #fff; }
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-secondary);
-        }
-        .empty-state i { font-size: 3.5rem; opacity: 0.3; margin-bottom: 12px; }
-        .empty-state p { font-size: 1.1rem; }
-        .cart-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.35);
-            backdrop-filter: blur(4px);
-            z-index: 200;
-            opacity: 0;
-            pointer-events: none;
-            transition: var(--transition);
-        }
-        .cart-overlay.open { opacity: 1; pointer-events: auto; }
-        .cart-sidebar {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 400px;
-            max-width: 92vw;
-            height: 100vh;
-            background: var(--surface);
-            z-index: 201;
-            padding: 24px 20px;
-            overflow-y: auto;
-            transform: translateX(105%);
-            transition: var(--transition);
-            box-shadow: -8px 0 40px rgba(0, 0, 0, 0.12);
-            display: flex;
-            flex-direction: column;
-        }
-        .cart-sidebar.open { transform: translateX(0); }
-        .cart-sidebar .cart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 16px;
-            border-bottom: 2px solid var(--border);
-            margin-bottom: 16px;
-        }
-        .cart-sidebar .cart-header h2 { font-size: 1.3rem; display: flex; align-items: center; gap: 8px; }
-        .cart-sidebar .cart-header .close-btn {
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-            padding: 4px 8px;
-            border-radius: 8px;
-            transition: var(--transition);
-        }
-        .cart-sidebar .cart-header .close-btn:hover {
-            background: var(--surface-hover);
-            color: var(--text);
-        }
-        .cart-item {
-            display: flex;
-            gap: 14px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-            align-items: center;
-        }
-        .cart-item img {
-            width: 56px;
-            height: 56px;
-            object-fit: cover;
-            border-radius: 10px;
-            background: var(--surface-hover);
-        }
-        .cart-item-info { flex: 1; }
-        .cart-item-info h4 { font-size: 0.95rem; font-weight: 600; }
-        .cart-item-info .cart-price {
-            font-weight: 700;
-            color: var(--green-dark);
-            font-size: 0.9rem;
-        }
-        .cart-item .qty-control {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .cart-item .qty-control button {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: var(--surface-hover);
-            font-weight: 700;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            color: var(--text);
-        }
-        .cart-item .qty-control button:hover {
-            background: var(--green);
-            color: #fff;
-        }
-        .cart-item .qty-control span {
-            font-weight: 700;
-            min-width: 24px;
-            text-align: center;
-        }
-        .cart-item .remove-item {
-            color: var(--text-secondary);
-            transition: var(--transition);
-            font-size: 1rem;
-            padding: 4px;
-        }
-        .cart-item .remove-item:hover { color: var(--red); }
-        .cart-footer {
-            margin-top: auto;
-            padding-top: 16px;
-            border-top: 2px solid var(--border);
-        }
-        .cart-footer .total-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 14px;
-        }
-        .cart-footer .total-row span:last-child { color: var(--green-dark); }
-        .cart-footer .checkout-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--green);
-            color: #fff;
-            border-radius: 40px;
-            font-weight: 700;
-            font-size: 1rem;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .cart-footer .checkout-btn:hover {
-            background: var(--green-dark);
-            transform: scale(1.01);
-        }
-        .cart-footer .telegram-contact {
-            text-align: center;
-            margin-top: 12px;
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            background: var(--surface-hover);
-            padding: 8px 12px;
-            border-radius: 30px;
-        }
-        .cart-footer .telegram-contact i { color: #0088cc; }
-        .cart-footer .telegram-contact strong { color: var(--green-dark); }
-        .detail-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(6px);
-            z-index: 300;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: var(--transition);
-        }
-        .detail-overlay.open { opacity: 1; pointer-events: auto; }
-        .detail-modal {
-            background: var(--modal-bg);
-            border-radius: var(--card-radius);
-            padding: 32px 28px;
-            width: 480px;
-            max-width: 94vw;
-            max-height: 90vh;
-            overflow-y: auto;
-            transform: scale(0.92);
-            transition: var(--transition);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
-            position: relative;
-        }
-        .detail-overlay.open .detail-modal { transform: scale(1); }
-        .detail-modal .close-detail {
-            position: absolute;
-            top: 16px;
-            right: 20px;
-            font-size: 1.8rem;
-            color: var(--text-secondary);
-            transition: var(--transition);
-        }
-        .detail-modal .close-detail:hover {
-            color: var(--text);
-            transform: rotate(90deg);
-        }
-        .detail-modal .detail-img {
-            width: 100%;
-            height: 220px;
-            object-fit: cover;
-            border-radius: 12px;
-            background: var(--surface-hover);
-            margin-bottom: 16px;
-        }
-        .detail-modal .detail-cat {
-            font-size: 0.75rem;
-            font-weight: 700;
-            color: var(--green);
-            background: var(--green-light);
-            padding: 2px 14px;
-            border-radius: 20px;
-            display: inline-block;
-            margin-bottom: 8px;
-        }
-        .detail-modal .detail-name { font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
-        .detail-modal .detail-price {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--green-dark);
-            margin-bottom: 12px;
-        }
-        .detail-modal .detail-desc {
-            font-size: 1rem;
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-            line-height: 1.7;
-        }
-        .detail-modal .detail-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .detail-modal .detail-actions button {
-            flex: 1;
-            padding: 12px;
-            border-radius: 30px;
-            font-weight: 700;
-            font-size: 1rem;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .admin-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(6px);
-            z-index: 400;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: var(--transition);
-        }
-        .admin-overlay.open { opacity: 1; pointer-events: auto; }
-        .admin-modal {
-            background: var(--modal-bg);
-            border-radius: var(--card-radius);
-            padding: 32px 28px;
-            width: 440px;
-            max-width: 94vw;
-            max-height: 90vh;
-            overflow-y: auto;
-            transform: scale(0.92);
-            transition: var(--transition);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
-        }
-        .admin-overlay.open .admin-modal { transform: scale(1); }
-        .admin-modal h2 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: var(--green-dark);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .admin-modal .pwd-input { margin-bottom: 16px; }
-        .admin-modal .pwd-input label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 4px;
-            font-size: 0.9rem;
-        }
-        .admin-modal .admin-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 6px;
-        }
-        .admin-modal .admin-actions button {
-            flex: 1;
-            padding: 12px;
-            border-radius: 30px;
-            font-weight: 700;
-            transition: var(--transition);
-        }
-        .btn-primary { background: var(--green); color: #fff; }
-        .btn-primary:hover { background: var(--green-dark); }
-        .btn-danger { background: var(--red); color: #fff; }
-        .btn-danger:hover { background: #c92a1f; }
-        .btn-secondary { background: var(--surface-hover); color: var(--text); }
-        .btn-secondary:hover { background: var(--border); }
-        .admin-dash {
-            display: none;
-            padding: 24px 0 40px;
-        }
-        .admin-dash.active { display: block; }
-        .admin-dash .dash-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .admin-dash .dash-header h2 {
-            font-size: 1.5rem;
-            color: var(--green-dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .admin-dash .dash-header .admin-actions-top {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .admin-dash .dash-header .admin-actions-top button {
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-        .admin-dash .product-form {
-            background: var(--surface);
-            padding: 24px;
-            border-radius: var(--card-radius);
-            box-shadow: var(--shadow);
-            margin-bottom: 28px;
-            border: 1px solid var(--border);
-        }
-        .admin-dash .product-form .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-            margin-bottom: 14px;
-        }
-        .admin-dash .product-form .form-row.full { grid-template-columns: 1fr; }
-        .admin-dash .product-form label {
-            font-weight: 600;
-            font-size: 0.85rem;
-            display: block;
-            margin-bottom: 3px;
-            color: var(--text-secondary);
-        }
-        .admin-dash .product-form .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 6px;
-        }
-        .admin-dash .product-form .form-actions button {
-            padding: 10px 30px;
-            border-radius: 30px;
-            font-weight: 700;
-            transition: var(--transition);
-        }
-        .admin-dash .product-list-admin {
-            background: var(--surface);
-            border-radius: var(--card-radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            border: 1px solid var(--border);
-            margin-bottom: 30px;
-        }
-        .admin-dash .product-list-admin .list-header {
-            display: grid;
-            grid-template-columns: 50px 1fr 0.8fr 0.8fr 0.6fr 0.6fr;
-            padding: 12px 16px;
-            background: var(--admin-header-bg);
-            font-weight: 700;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            color: var(--text-secondary);
-            border-bottom: 2px solid var(--border);
-        }
-        .admin-dash .product-list-admin .list-item {
-            display: grid;
-            grid-template-columns: 50px 1fr 0.8fr 0.8fr 0.6fr 0.6fr;
-            padding: 10px 16px;
-            align-items: center;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.9rem;
-            transition: var(--transition);
-        }
-        .admin-dash .product-list-admin .list-item:hover { background: var(--surface-hover); }
-        .admin-dash .product-list-admin .list-item img {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 8px;
-            background: var(--surface-hover);
-        }
-        .admin-dash .product-list-admin .list-item .item-actions {
-            display: flex;
-            gap: 6px;
-        }
-        .admin-dash .product-list-admin .list-item .item-actions button {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 700;
-            transition: var(--transition);
-        }
-        .admin-dash .product-list-admin .list-item .item-actions .edit-btn {
-            background: var(--yellow);
-            color: #1e2a3a;
-        }
-        .admin-dash .product-list-admin .list-item .item-actions .edit-btn:hover {
-            background: #e6b800;
-        }
-        .admin-dash .product-list-admin .list-item .item-actions .del-btn {
-            background: #fde8e5;
-            color: var(--red);
-        }
-        .admin-dash .product-list-admin .list-item .item-actions .del-btn:hover {
-            background: var(--red);
-            color: #fff;
-        }
-        .stats-section {
-            background: var(--surface);
-            border-radius: var(--card-radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            padding: 24px;
-            margin-top: 20px;
-        }
-        .stats-section h3 {
-            font-size: 1.3rem;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-        .stats-grid .stat-card {
-            background: var(--surface-hover);
-            padding: 16px;
-            border-radius: 12px;
-            text-align: center;
-            border: 1px solid var(--border);
-        }
-        .stats-grid .stat-card .stat-number {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--green-dark);
-        }
-        .stats-grid .stat-card .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-        .chart-container { height: 250px; margin-bottom: 24px; }
-        .sales-history { margin-top: 16px; }
-        .sales-history table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        .sales-history th {
-            text-align: left;
-            padding: 10px 12px;
-            background: var(--admin-header-bg);
-            border-bottom: 2px solid var(--border);
-            font-weight: 700;
-            color: var(--text-secondary);
-        }
-        .sales-history td {
-            padding: 8px 12px;
-            border-bottom: 1px solid var(--border);
-        }
-        .sales-history tr:hover td { background: var(--surface-hover); }
-        .sales-history .empty-history {
-            text-align: center;
-            padding: 30px;
-            color: var(--text-secondary);
-        }
-        .checkout-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.45);
-            backdrop-filter: blur(6px);
-            z-index: 500;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: var(--transition);
-        }
-        .checkout-overlay.open { opacity: 1; pointer-events: auto; }
-        .checkout-modal {
-            background: var(--modal-bg);
-            border-radius: var(--card-radius);
-            padding: 36px 32px;
-            width: 480px;
-            max-width: 94vw;
-            max-height: 90vh;
-            overflow-y: auto;
-            transform: scale(0.92);
-            transition: var(--transition);
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
-        }
-        .checkout-overlay.open .checkout-modal { transform: scale(1); }
-        .checkout-modal .check-icon {
-            font-size: 4rem;
-            color: var(--green);
-            margin-bottom: 8px;
-            text-align: center;
-        }
-        .checkout-modal h2 {
-            text-align: center;
-            color: var(--green-dark);
-            margin-bottom: 4px;
-        }
-        .checkout-modal .buyer-form { margin: 16px 0; }
-        .checkout-modal .buyer-form .form-group { margin-bottom: 12px; }
-        .checkout-modal .buyer-form label {
-            font-weight: 600;
-            font-size: 0.85rem;
-            display: block;
-            margin-bottom: 4px;
-            color: var(--text-secondary);
-        }
-        .checkout-modal .telegram-box {
-            background: var(--surface-hover);
-            border-radius: 14px;
-            padding: 16px;
-            margin: 16px 0;
-            border: 2px dashed #0088cc;
-            text-align: center;
-        }
-        .checkout-modal .telegram-box .telegram-handle {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: #0088cc;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .checkout-modal .order-summary {
-            text-align: left;
-            background: var(--surface-hover);
-            padding: 16px;
-            border-radius: 12px;
-            margin: 12px 0 18px;
-        }
-        .checkout-modal .order-summary .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            font-size: 0.9rem;
-        }
-        .checkout-modal .order-summary .summary-row.total {
-            font-weight: 700;
-            border-top: 2px solid var(--border);
-            padding-top: 10px;
-            margin-top: 6px;
-            font-size: 1.05rem;
-        }
-        .checkout-modal .checkout-actions {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .checkout-modal .checkout-actions button {
-            flex: 1;
-            padding: 12px;
-            border-radius: 30px;
-            font-weight: 700;
-            transition: var(--transition);
-        }
-        .checkout-modal .checkout-actions .btn-telegram {
-            background: #0088cc;
-            color: #fff;
-        }
-        .checkout-modal .checkout-actions .btn-telegram:hover { background: #006699; }
-        .toast-container {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 999;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            max-width: 360px;
-        }
-        .toast {
-            background: var(--surface);
-            color: var(--text);
-            padding: 14px 22px;
-            border-radius: 14px;
-            box-shadow: var(--shadow);
-            animation: slideUp 0.4s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 500;
-            font-size: 0.92rem;
-            border-left: 5px solid var(--green);
-            border: 1px solid var(--border);
-        }
-        .toast.error { border-left-color: var(--red); }
-        .toast.success { border-left-color: var(--green); }
-        .toast.info { border-left-color: #0088cc; }
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        @media (max-width: 768px) {
-            .header-inner { flex-direction: column; align-items: stretch; gap: 8px; }
-            .logo-area h1 { font-size: 1.2rem; }
-            .header-actions { justify-content: space-between; }
-            .hero h2 { font-size: 1.5rem; }
-            .product-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
-            .product-body { padding: 12px 14px 14px; }
-            .product-body h3 { font-size: 0.9rem; }
-            .product-body .price { font-size: 1rem; }
-            .product-body .actions button { font-size: 0.7rem; padding: 6px 0; }
-            .cart-sidebar { width: 100vw; max-width: 100vw; padding: 16px; }
-            .admin-modal { padding: 24px 18px; }
-            .admin-dash .product-form .form-row { grid-template-columns: 1fr; }
-            .admin-dash .product-list-admin .list-header,
-            .admin-dash .product-list-admin .list-item {
-                grid-template-columns: 40px 1fr 0.6fr 0.6fr 0.5fr 0.5fr;
-                font-size: 0.75rem;
-                gap: 4px;
-            }
-            .admin-dash .product-list-admin .list-item img { width: 32px; height: 32px; }
-            .admin-dash .product-list-admin .list-header span:nth-child(4),
-            .admin-dash .product-list-admin .list-item span:nth-child(4) { display: none; }
-            .checkout-modal { padding: 24px 18px; }
-            .checkout-modal .telegram-box .telegram-handle { font-size: 1.3rem; }
-            .category-tabs button { padding: 6px 16px; font-size: 0.75rem; }
-            .toast-container { bottom: 16px; right: 16px; left: 16px; max-width: unset; }
-            .detail-modal { padding: 24px 18px; }
-            .detail-modal .detail-name { font-size: 1.3rem; }
-            .detail-modal .detail-img { height: 160px; }
-            .stats-grid { grid-template-columns: 1fr 1fr; }
-        }
-        @media (max-width: 480px) {
-            .product-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-            .product-img { height: 130px; }
-            .product-body .desc { font-size: 0.75rem; -webkit-line-clamp: 1; }
-            .hero h2 { font-size: 1.2rem; }
-            .hero p { font-size: 0.85rem; }
-        }
-        .hidden { display: none !important; }
-        .text-center { text-align: center; }
-        .mt-8 { margin-top: 8px; }
-        .mb-8 { margin-bottom: 8px; }
-        .gap-8 { gap: 8px; }
-        .flex { display: flex; }
-        .flex-center { display: flex; align-items: center; justify-content: center; }
-        .w-full { width: 100%; }
-        .img-placeholder {
-            background: var(--surface-hover);
-            color: var(--text-secondary);
-            font-size: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            width: 100%;
-        }
-        .btn-icon {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            padding: 4px 8px;
-            border-radius: 8px;
-            transition: var(--transition);
-            color: var(--text-secondary);
-        }
-        .btn-icon:hover {
-            background: var(--surface-hover);
-            color: var(--text);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>BDU Market · Mini App</title>
+  <!-- Tailwind via CDN + custom smooth style -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome for icons (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; }
+    body { background: #f5f7fb; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+    .glass-card { background: rgba(255,255,255,0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,0.3); }
+    .product-card { transition: all 0.15s ease; }
+    .product-card:active { transform: scale(0.97); }
+    .modal-backdrop { background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); }
+    .order-btn { background: #0088cc; }
+    .order-btn:hover { background: #006699; }
+    .lang-btn { background: #1e293b; color: white; }
+    .admin-badge { background: #b45309; color: white; font-size: 0.65rem; padding: 2px 10px; border-radius: 30px; }
+    /* RTL support for Amharic */
+    [dir="rtl"] { text-align: right; }
+    [dir="rtl"] .flex-row { flex-direction: row-reverse; }
+    img { object-fit: cover; }
+  </style>
 </head>
-<body>
+<body class="p-3 max-w-md mx-auto min-h-screen relative">
 
-    <!-- HEADER -->
-    <header>
-        <div class="container header-inner">
-            <div class="logo-area">
-                <i class="fas fa-store-alt"></i>
-                <h1>Sky<span>Shop</span></h1>
-            </div>
-            <div class="header-actions">
-                <button class="theme-btn" id="themeToggle"><i class="fas fa-moon" id="themeIcon"></i></button>
-                <button class="lang-btn" id="langToggle"><i class="fas fa-language"></i><span id="langLabel">አማርኛ</span></button>
-                <button class="cart-btn" id="cartToggle">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span id="cartCount">0</span>
-                    <span class="cart-badge" id="cartBadge">0</span>
-                </button>
-                <button class="admin-shortcut" id="adminOpen"><i class="fas fa-user-shield"></i></button>
-            </div>
-        </div>
-    </header>
-
-    <!-- HERO -->
-    <section class="hero">
-        <div class="container">
-            <h2 data-i18n="hero_title"><i class="fas fa-graduation-cap"></i> ለዩኒቨርሲቲ ተማሪዎች <i class="fas fa-graduation-cap"></i></h2>
-            <p data-i18n="hero_sub">ጥራት ያላቸው የትምህርት ቁሳቁሶች፣ መዋቢያዎች እና ኤሌክትሮኒክስ በአንድ ቦታ</p>
-            <span class="tag" data-i18n="hero_tag">📚 ለተማሪዎች ልዩ ቅናሽ</span>
-        </div>
-    </section>
-
-    <!-- CATEGORY TABS -->
-    <div class="container">
-        <div class="category-tabs" id="categoryTabs">
-            <button class="active" data-cat="all"><i class="fas fa-th-large"></i> <span data-i18n="cat_all">ሁሉም</span></button>
-            <button data-cat="educational"><i class="fas fa-book"></i> <span data-i18n="cat_edu">የትምህርት</span></button>
-            <button data-cat="cosmetics"><i class="fas fa-spa"></i> <span data-i18n="cat_cos">መዋቢያ</span></button>
-            <button data-cat="electronics"><i class="fas fa-microchip"></i> <span data-i18n="cat_elec">ኤሌክትሮኒክስ</span></button>
-        </div>
+  <!-- MAIN APP -->
+  <div id="app" class="space-y-4 pb-24">
+    <!-- Header with language toggle -->
+    <div class="flex justify-between items-center pt-1">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl font-bold text-indigo-800">🎓 BDU</span>
+        <span class="text-sm text-gray-600 font-medium" id="headerSub">Market</span>
+      </div>
+      <div class="flex gap-2 items-center">
+        <button id="langToggle" class="lang-btn px-3 py-1.5 rounded-full text-sm flex items-center gap-1 shadow-sm">
+          <i class="fas fa-globe-africa"></i> <span id="langLabel">አማርኛ</span>
+        </button>
+        <button id="adminOpenBtn" class="bg-gray-200 hover:bg-gray-300 p-2 rounded-full text-gray-700">
+          <i class="fas fa-user-cog"></i>
+        </button>
+      </div>
     </div>
 
-    <!-- PRODUCT GRID -->
-    <div class="container">
-        <div class="product-grid" id="productGrid">
-            <div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Loading products...</p></div>
-        </div>
+    <!-- Category filter chips -->
+    <div class="flex flex-wrap gap-2 py-1" id="categoryFilter">
+      <button data-cat="all" class="cat-btn bg-indigo-600 text-white px-4 py-1.5 rounded-full text-sm font-medium">All</button>
+      <button data-cat="Educational" class="cat-btn bg-gray-200 text-gray-700 px-4 py-1.5 rounded-full text-sm font-medium">📚 Educational</button>
+      <button data-cat="Cosmetics" class="cat-btn bg-gray-200 text-gray-700 px-4 py-1.5 rounded-full text-sm font-medium">💄 Cosmetics</button>
+      <button data-cat="Electronics" class="cat-btn bg-gray-200 text-gray-700 px-4 py-1.5 rounded-full text-sm font-medium">📱 Electronics</button>
     </div>
 
-    <!-- CART -->
-    <div class="cart-overlay" id="cartOverlay"></div>
-    <div class="cart-sidebar" id="cartSidebar">
-        <div class="cart-header">
-            <h2><i class="fas fa-shopping-cart" style="color:var(--green);"></i> <span data-i18n="cart_title">ጋሪ</span></h2>
-            <button class="close-btn" id="cartClose"><i class="fas fa-times"></i></button>
-        </div>
-        <div id="cartItems">
-            <div class="empty-state" id="emptyCart">
-                <i class="fas fa-cart-plus"></i>
-                <p data-i18n="cart_empty">ጋሪዎ ባዶ ነው</p>
-            </div>
-        </div>
-        <div class="cart-footer" id="cartFooter">
-            <div class="total-row"><span data-i18n="cart_total">ጠቅላላ</span><span id="cartTotal">0 ብር</span></div>
-            <button class="checkout-btn" id="checkoutBtn"><i class="fas fa-check-circle"></i> <span data-i18n="cart_checkout">ግዢ አጠናቅቅ</span></button>
-            <div class="telegram-contact"><i class="fab fa-telegram-plane"></i> <span data-i18n="cart_telegram">ለግዢ በቴሌግራም ያግኙን</span> <strong>@sky_dooper</strong></div>
-        </div>
+    <!-- Product grid -->
+    <div id="productGrid" class="grid grid-cols-2 gap-3">
+      <!-- rendered by JS -->
     </div>
+  </div>
 
-    <!-- DETAIL MODAL -->
-    <div class="detail-overlay" id="detailOverlay">
-        <div class="detail-modal">
-            <button class="close-detail" id="detailClose"><i class="fas fa-times"></i></button>
-            <img class="detail-img" id="detailImg" src="" alt="" />
-            <span class="detail-cat" id="detailCat"></span>
-            <h2 class="detail-name" id="detailName"></h2>
-            <div class="detail-price" id="detailPrice"></div>
-            <p class="detail-desc" id="detailDesc"></p>
-            <div class="detail-actions">
-                <button class="btn-add" id="detailAddBtn"><i class="fas fa-cart-plus"></i> <span data-i18n="add_to_cart">ወደ ጋሪ ጨምር</span></button>
-                <button class="btn-buy" id="detailBuyBtn"><i class="fas fa-bolt"></i> <span data-i18n="buy_now">አሁን ግዛ</span></button>
-            </div>
+  <!-- PRODUCT DETAIL MODAL (rating + order) -->
+  <div id="detailModal" class="fixed inset-0 z-50 flex items-end justify-center modal-backdrop hidden" style="background: rgba(0,0,0,0.5);">
+    <div class="bg-white w-full max-w-md rounded-t-3xl p-5 max-h-[90vh] overflow-y-auto animate-[slideUp_0.2s_ease]">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-xl font-bold" id="detailTitle">Product</h3>
+        <button id="closeDetail" class="text-gray-500 text-2xl">&times;</button>
+      </div>
+      <img id="detailImage" src="" alt="product" class="w-full h-48 rounded-xl object-cover mb-3">
+      <div class="flex justify-between items-center">
+        <span id="detailPrice" class="text-indigo-700 font-bold text-lg">0 ETB</span>
+        <span id="detailCategory" class="bg-gray-200 px-3 py-0.5 rounded-full text-sm">Category</span>
+      </div>
+      <p id="detailDesc" class="text-gray-700 text-sm my-2">Description</p>
+      <!-- rating & comment -->
+      <div class="bg-gray-50 p-3 rounded-xl mt-2">
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-medium">⭐ Rating:</span>
+          <span id="detailRating" class="text-amber-500">★★★★★</span>
+          <span class="text-xs text-gray-400">(4.2)</span>
         </div>
+        <div class="flex items-center gap-2 mt-1">
+          <i class="far fa-comment text-gray-500"></i>
+          <span class="text-sm text-gray-600" id="detailComment">"Great for students!"</span>
+        </div>
+      </div>
+      <!-- order button -->
+      <button id="orderBtn" class="order-btn w-full text-white font-bold py-3 rounded-xl mt-4 shadow-md flex items-center justify-center gap-2">
+        <i class="fab fa-telegram-plane"></i> Order via Telegram
+      </button>
     </div>
+  </div>
 
-    <!-- ADMIN LOGIN -->
-    <div class="admin-overlay" id="adminOverlay">
-        <div class="admin-modal">
-            <h2><i class="fas fa-user-shield" style="color:var(--gold);"></i> <span data-i18n="admin_login">የአስተዳዳሪ መግቢያ</span></h2>
-            <div class="pwd-input">
-                <label data-i18n="admin_password">የይለፍ ቃል</label>
-                <input type="password" id="adminPassword" placeholder="••••••••" />
-            </div>
-            <div class="admin-actions">
-                <button class="btn-primary" id="adminLoginBtn"><span data-i18n="admin_login_btn">ግባ</span></button>
-                <button class="btn-secondary" id="adminClose"><span data-i18n="admin_cancel">ዝጋ</span></button>
-            </div>
-            <p id="adminError" style="color:var(--red);font-size:0.85rem;margin-top:10px;text-align:center;display:none;" data-i18n="admin_error">የይለፍ ቃል ትክክል አይደለም</p>
+  <!-- ORDER FORM MODAL -->
+  <div id="orderFormModal" class="fixed inset-0 z-[60] flex items-center justify-center modal-backdrop hidden">
+    <div class="bg-white w-full max-w-md rounded-3xl p-6 m-3 shadow-2xl">
+      <h3 class="text-xl font-bold mb-2 flex items-center gap-2"><i class="fas fa-pen-fancy text-indigo-600"></i> Order Details</h3>
+      <p class="text-sm text-gray-500 mb-3">Fill in your info to send order to @sky_dooper</p>
+      <form id="orderForm" class="space-y-3">
+        <input type="text" id="fullName" placeholder="Full Name" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm" required>
+        <input type="text" id="campusDorm" placeholder="Campus & Dorm Number (e.g. Lidege Dorm 12)" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm" required>
+        <input type="text" id="studentId" placeholder="Student ID (e.g. BDU/1234/12)" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm" required>
+        <input type="tel" id="phoneNumber" placeholder="Phone Number (e.g. 09XXXXXXXX)" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm" required>
+        <div class="flex gap-2 pt-1">
+          <button type="submit" class="bg-indigo-600 text-white flex-1 py-2.5 rounded-xl font-bold">Send Order <i class="fas fa-paper-plane ml-1"></i></button>
+          <button type="button" id="cancelOrderForm" class="bg-gray-200 px-5 rounded-xl">Cancel</button>
         </div>
+      </form>
     </div>
+  </div>
 
-    <!-- CHECKOUT -->
-    <div class="checkout-overlay" id="checkoutOverlay">
-        <div class="checkout-modal">
-            <div class="check-icon"><i class="fas fa-check-circle"></i></div>
-            <h2 data-i18n="checkout_title">ግዢዎ ተዘጋጅቷል!</h2>
-            <p data-i18n="checkout_sub">እባክዎ ለማጠናቀቅ በቴሌግራም ያግኙን</p>
-            <div class="buyer-form">
-                <div class="form-group"><label data-i18n="checkout_name">ስም (አማራጭ)</label><input type="text" id="buyerName" placeholder="ስምዎ" /></div>
-                <div class="form-group"><label data-i18n="checkout_telegram_handle">የቴሌግራም አድራሻ (አማራጭ)</label><input type="text" id="buyerTelegram" placeholder="@username" /></div>
-            </div>
-            <div class="telegram-box">
-                <div class="telegram-handle"><i class="fab fa-telegram-plane"></i> @sky_dooper</div>
-                <p data-i18n="checkout_telegram">👆 ይህንን የቴሌግራም አድራሻ ይጠቀሙ</p>
-            </div>
-            <div class="order-summary" id="orderSummary">
-                <div class="summary-row"><span data-i18n="checkout_items">ዕቃዎች</span><span id="orderItemCount">0</span></div>
-                <div class="summary-row"><span data-i18n="checkout_total">ጠቅላላ</span><span id="orderTotal">0 ብር</span></div>
-                <div class="summary-row total"><span data-i18n="checkout_payable">የሚከፈል</span><span id="orderPayable">0 ብር</span></div>
-            </div>
-            <div class="checkout-actions">
-                <button class="btn-telegram" id="checkoutTelegramBtn"><i class="fab fa-telegram-plane"></i> <span data-i18n="checkout_send_telegram">ወደ ቴሌግራም ላክ</span></button>
-                <button class="btn-secondary" id="checkoutClose"><span data-i18n="checkout_close">ዝጋ</span></button>
-            </div>
+  <!-- ADMIN PANEL MODAL (password protected) -->
+  <div id="adminModal" class="fixed inset-0 z-[70] flex items-center justify-center modal-backdrop hidden">
+    <div class="bg-white w-full max-w-md rounded-3xl p-5 m-2 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-3">
+        <h3 class="text-xl font-bold flex items-center gap-2"><i class="fas fa-lock text-amber-600"></i> Admin</h3>
+        <button id="closeAdmin" class="text-gray-500 text-2xl">&times;</button>
+      </div>
+      <!-- password gate -->
+      <div id="adminLoginGate" class="space-y-3">
+        <input type="password" id="adminPassInput" placeholder="Enter password" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm">
+        <button id="adminLoginBtn" class="bg-amber-600 w-full text-white py-2.5 rounded-xl font-bold">Unlock</button>
+        <p id="adminPassError" class="text-red-500 text-xs hidden">Incorrect password</p>
+      </div>
+      <!-- admin panel content (hidden until auth) -->
+      <div id="adminPanelContent" class="hidden space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="font-semibold text-gray-700">Manage Products</span>
+          <span class="admin-badge">protected</span>
         </div>
+        <!-- product form -->
+        <div class="bg-gray-50 p-3 rounded-2xl space-y-2">
+          <input type="text" id="adminTitle" placeholder="Product Title" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm">
+          <input type="text" id="adminPrice" placeholder="Price (ETB)" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm">
+          <select id="adminCategory" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm">
+            <option value="Educational">📚 Educational</option>
+            <option value="Cosmetics">💄 Cosmetics</option>
+            <option value="Electronics">📱 Electronics</option>
+          </select>
+          <textarea id="adminDesc" placeholder="Description" rows="2" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm"></textarea>
+          <div class="flex gap-2">
+            <input type="text" id="adminImageUrl" placeholder="Image URL" class="flex-1 border border-gray-300 rounded-xl px-3 py-2 text-sm">
+            <label class="bg-white border border-gray-300 rounded-xl px-3 py-2 text-sm cursor-pointer flex items-center gap-1">
+              <i class="fas fa-upload"></i> <input type="file" id="adminImageFile" accept="image/*" class="hidden">
+            </label>
+          </div>
+          <div class="flex gap-2">
+            <button id="adminAddBtn" class="bg-indigo-600 text-white flex-1 py-2 rounded-xl font-bold text-sm">Add / Update</button>
+            <button id="adminDeleteBtn" class="bg-red-500 text-white px-4 py-2 rounded-xl text-sm">Delete</button>
+          </div>
+          <select id="adminProductSelect" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm">
+            <option value="">— select product to edit/delete —</option>
+          </select>
+        </div>
+        <p class="text-xs text-gray-400 text-center">Changes sync instantly.</p>
+      </div>
     </div>
-
-    <!-- TOAST -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <!-- ============================================================ -->
-    <!-- JAVASCRIPT -->
-    <!-- ============================================================ -->
-    <script>
-        (function() {
-            'use strict';
-
-            // =========================================================
-            // 🔥 FIREBASE CONFIG – YOUR NEW CONFIG
-            // =========================================================
-            const firebaseConfig = {
-                apiKey: "AIzaSyA6y_sD6xLDZjbJTSyFdRt4XgnPSoDKoc",
-                authDomain: "dooper-shop-fce54.firebaseapp.com",
-                projectId: "dooper-shop-fce54",
-                storageBucket: "dooper-shop-fce54.firebasestorage.app",
-                messagingSenderId: "38979650471",
-                appId: "1:38979650471:web:ee92250e3d22bbefa6ac82",
-                measurementId: "G=V6GWPY4DWL"
-            };
-            // =========================================================
-
-            // Initialize Firebase
-            firebase.initializeApp(firebaseConfig);
-            const db = firebase.firestore();
-
-            const ADMIN_PASSWORD = '281888$';
-            const CART_KEY = 'skyshop_cart';
-            const LANG_KEY = 'skyshop_lang';
-            const THEME_KEY = 'skyshop_theme';
-
-            let products = [];
-            let cart = [];
-            let currentCategory = 'all';
-            let currentLang = localStorage.getItem(LANG_KEY) || 'en';
-            let currentTheme = localStorage.getItem(THEME_KEY) || 'light';
-            let isAdmin = false;
-            let sales = [];
-            let unsubscribeProducts = null;
-            let unsubscribeSales = null;
-
-            // =========================================================
-            // FIREBASE REAL-TIME LISTENERS
-            // =========================================================
-            function listenToProducts() {
-                if (unsubscribeProducts) unsubscribeProducts();
-                unsubscribeProducts = db.collection('products')
-                    .onSnapshot((snapshot) => {
-                        products = [];
-                        snapshot.forEach(doc => {
-                            const data = doc.data();
-                            data.id = doc.id;
-                            products.push(data);
-                        });
-                        products.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-                        renderProducts(currentCategory);
-                        renderCart();
-                        if (isAdmin) {
-                            renderAdminProducts();
-                            renderStats();
-                        }
-                    }, (error) => {
-                        console.error('Firestore error:', error);
-                        loadProductsLocal();
-                        renderProducts(currentCategory);
-                        renderCart();
-                    });
-            }
-
-            function listenToSales() {
-                if (unsubscribeSales) unsubscribeSales();
-                unsubscribeSales = db.collection('sales')
-                    .orderBy('date', 'desc')
-                    .onSnapshot((snapshot) => {
-                        sales = [];
-                        snapshot.forEach(doc => {
-                            const data = doc.data();
-                            data.id = doc.id;
-                            sales.push(data);
-                        });
-                        if (isAdmin) renderStats();
-                    }, (error) => {
-                        console.error('Sales listen error:', error);
-                        loadSalesLocal();
-                        if (isAdmin) renderStats();
-                    });
-            }
-
-            // =========================================================
-            // FIREBASE WRITE OPERATIONS
-            // =========================================================
-            async function addProductToFirebase(product) {
-                try {
-                    await db.collection('products').add(product);
-                    showToast('Product added to cloud!', 'success');
-                    return true;
-                } catch (e) {
-                    console.error('Add product error:', e);
-                    showToast('Failed to add product to cloud.', 'error');
-                    products.push({ ...product, id: 'local_' + Date.now() });
-                    saveProductsLocal();
-                    renderProducts(currentCategory);
-                    if (isAdmin) renderAdminProducts();
-                    return false;
-                }
-            }
-
-            async function updateProductInFirebase(id, data) {
-                try {
-                    await db.collection('products').doc(id).update(data);
-                    showToast('Product updated in cloud!', 'success');
-                    return true;
-                } catch (e) {
-                    console.error('Update product error:', e);
-                    showToast('Failed to update product in cloud.', 'error');
-                    const idx = products.findIndex(p => p.id === id);
-                    if (idx !== -1) {
-                        products[idx] = { ...products[idx], ...data };
-                        saveProductsLocal();
-                        renderProducts(currentCategory);
-                        if (isAdmin) renderAdminProducts();
-                    }
-                    return false;
-                }
-            }
-
-            async function deleteProductFromFirebase(id) {
-                try {
-                    await db.collection('products').doc(id).delete();
-                    showToast('Product deleted from cloud!', 'success');
-                    return true;
-                } catch (e) {
-                    console.error('Delete product error:', e);
-                    showToast('Failed to delete product from cloud.', 'error');
-                    products = products.filter(p => p.id !== id);
-                    saveProductsLocal();
-                    renderProducts(currentCategory);
-                    if (isAdmin) renderAdminProducts();
-                    return false;
-                }
-            }
-
-            async function addSaleToFirebase(sale) {
-                try {
-                    await db.collection('sales').add(sale);
-                    showToast('Sale recorded in cloud!', 'success');
-                    return true;
-                } catch (e) {
-                    console.error('Add sale error:', e);
-                    showToast('Failed to record sale in cloud.', 'error');
-                    sales.push(sale);
-                    saveSalesLocal();
-                    if (isAdmin) renderStats();
-                    return false;
-                }
-            }
-
-            // =========================================================
-            // LOCAL STORAGE FALLBACK
-            // =========================================================
-            function loadProductsLocal() {
-                const raw = localStorage.getItem('skyshop_products');
-                if (raw) {
-                    try { products = JSON.parse(raw); } catch (e) { products = getDefaultProducts(); }
-                } else {
-                    products = getDefaultProducts();
-                }
-                saveProductsLocal();
-            }
-
-            function saveProductsLocal() {
-                localStorage.setItem('skyshop_products', JSON.stringify(products));
-            }
-
-            function loadSalesLocal() {
-                const raw = localStorage.getItem('skyshop_sales');
-                if (raw) {
-                    try { sales = JSON.parse(raw); } catch (e) { sales = []; }
-                } else {
-                    sales = [];
-                }
-            }
-
-            function saveSalesLocal() {
-                localStorage.setItem('skyshop_sales', JSON.stringify(sales));
-            }
-
-            function loadCart() {
-                const raw = localStorage.getItem(CART_KEY);
-                if (raw) {
-                    try { cart = JSON.parse(raw); } catch (e) { cart = []; }
-                } else {
-                    cart = [];
-                }
-                saveCart();
-            }
-
-            function saveCart() {
-                localStorage.setItem(CART_KEY, JSON.stringify(cart));
-                updateCartBadge();
-            }
-
-            function getDefaultProducts() {
-                return [
-                    // Initial products will be empty – you'll add them via admin
-                ];
-            }
-
-            // =========================================================
-            // TRANSLATIONS (shortened for space)
-            // =========================================================
-            const translations = {
-                en: {
-                    hero_title: 'For University Students',
-                    hero_sub: 'Quality educational materials, cosmetics & electronics in one place',
-                    hero_tag: '📚 Special discount for students',
-                    cat_all: 'All',
-                    cat_edu: 'Educational',
-                    cat_cos: 'Cosmetics',
-                    cat_elec: 'Electronics',
-                    cart_title: 'Cart',
-                    cart_empty: 'Your cart is empty',
-                    cart_total: 'Total',
-                    cart_checkout: 'Proceed to Checkout',
-                    cart_telegram: 'Contact us on Telegram',
-                    admin_login: 'Admin Login',
-                    admin_password: 'Password',
-                    admin_login_btn: 'Login',
-                    admin_cancel: 'Cancel',
-                    admin_error: 'Invalid password',
-                    checkout_title: 'Your order is ready!',
-                    checkout_sub: 'Please contact us on Telegram to complete your purchase',
-                    checkout_telegram: '👆 Use this Telegram handle',
-                    checkout_items: 'Items',
-                    checkout_total: 'Total',
-                    checkout_payable: 'Payable',
-                    checkout_close: 'Close',
-                    checkout_name: 'Name (optional)',
-                    checkout_telegram_handle: 'Telegram handle (optional)',
-                    checkout_send_telegram: 'Send to Telegram',
-                    add_to_cart: 'Add to Cart',
-                    buy_now: 'Buy Now',
-                    price_unit: 'Br',
-                    no_products: 'No products found',
-                    admin_dash_title: 'Admin Dashboard',
-                    admin_add_product: 'Add Product',
-                    admin_edit_product: 'Edit Product',
-                    admin_name: 'Name',
-                    admin_category: 'Category',
-                    admin_price: 'Price (Br)',
-                    admin_description: 'Description',
-                    admin_image: 'Image URL',
-                    admin_image_upload: 'Or upload image',
-                    admin_save: 'Save',
-                    admin_update: 'Update',
-                    admin_cancel_edit: 'Cancel',
-                    admin_delete: 'Delete',
-                    admin_edit: 'Edit',
-                    admin_no_products: 'No products in inventory',
-                    admin_close: 'Close Admin',
-                    toast_added: 'Added to cart!',
-                    toast_updated: 'Product updated!',
-                    toast_added_product: 'Product added!',
-                    toast_deleted: 'Product deleted!',
-                    toast_login_success: 'Welcome Admin!',
-                    toast_logout: 'Logged out',
-                    product_name: 'Product Name',
-                    product_price: 'Price',
-                    product_desc: 'Description',
-                    product_cat: 'Category',
-                    product_img: 'Image',
-                    stats_title: 'Sales Statistics',
-                    stats_total_sales: 'Total Sales',
-                    stats_total_revenue: 'Total Revenue',
-                    stats_orders: 'Orders',
-                    stats_history: 'Purchase History',
-                    stats_no_sales: 'No sales recorded yet.',
-                    stats_date: 'Date',
-                    stats_buyer: 'Buyer',
-                    stats_items: 'Items',
-                    stats_total: 'Total',
-                },
-                am: {
-                    hero_title: 'ለዩኒቨርሲቲ ተማሪዎች',
-                    hero_sub: 'ጥራት ያላቸው የትምህርት ቁሳቁሶች፣ መዋቢያዎች እና ኤሌክትሮኒክስ በአንድ ቦታ',
-                    hero_tag: '📚 ለተማሪዎች ልዩ ቅናሽ',
-                    cat_all: 'ሁሉም',
-                    cat_edu: 'የትምህርት',
-                    cat_cos: 'መዋቢያ',
-                    cat_elec: 'ኤሌክትሮኒክስ',
-                    cart_title: 'ጋሪ',
-                    cart_empty: 'ጋሪዎ ባዶ ነው',
-                    cart_total: 'ጠቅላላ',
-                    cart_checkout: 'ግዢ አጠናቅቅ',
-                    cart_telegram: 'ለግዢ በቴሌግራም ያግኙን',
-                    admin_login: 'የአስተዳዳሪ መግቢያ',
-                    admin_password: 'የይለፍ ቃል',
-                    admin_login_btn: 'ግባ',
-                    admin_cancel: 'ዝጋ',
-                    admin_error: 'የይለፍ ቃል ትክክል አይደለም',
-                    checkout_title: 'ግዢዎ ተዘጋጅቷል!',
-                    checkout_sub: 'እባክዎ ለማጠናቀቅ በቴሌግራም ያግኙን',
-                    checkout_telegram: '👆 ይህንን የቴሌግራም አድራሻ ይጠቀሙ',
-                    checkout_items: 'ዕቃዎች',
-                    checkout_total: 'ጠቅላላ',
-                    checkout_payable: 'የሚከፈል',
-                    checkout_close: 'ዝጋ',
-                    checkout_name: 'ስም (አማራጭ)',
-                    checkout_telegram_handle: 'የቴሌግራም አድራሻ (አማራጭ)',
-                    checkout_send_telegram: 'ወደ ቴሌግራም ላክ',
-                    add_to_cart: 'ወደ ጋሪ ጨምር',
-                    buy_now: 'አሁን ግዛ',
-                    price_unit: 'ብር',
-                    no_products: 'ምርት አልተገኘም',
-                    admin_dash_title: 'የአስተዳዳሪ መቆጣጠሪያ',
-                    admin_add_product: 'ምርት ጨምር',
-                    admin_edit_product: 'ምርት አርትዕ',
-                    admin_name: 'ስም',
-                    admin_category: 'ምድብ',
-                    admin_price: 'ዋጋ (ብር)',
-                    admin_description: 'መግለጫ',
-                    admin_image: 'የምስል አድራሻ',
-                    admin_image_upload: 'ወይም ምስል ይጫኑ',
-                    admin_save: 'አስቀምጥ',
-                    admin_update: 'አዘምን',
-                    admin_cancel_edit: 'ሰርዝ',
-                    admin_delete: 'ሰርዝ',
-                    admin_edit: 'አርትዕ',
-                    admin_no_products: 'ምርት የለም',
-                    admin_close: 'ዝጋ',
-                    toast_added: 'ወደ ጋሪ ተጨምሯል!',
-                    toast_updated: 'ምርት ተዘምኗል!',
-                    toast_added_product: 'ምርት ተጨምሯል!',
-                    toast_deleted: 'ምርት ተሰርዟል!',
-                    toast_login_success: 'እንኳን ደህና መጡ አስተዳዳሪ!',
-                    toast_logout: 'ዘግተሃል',
-                    product_name: 'የምርት ስም',
-                    product_price: 'ዋጋ',
-                    product_desc: 'መግለጫ',
-                    product_cat: 'ምድብ',
-                    product_img: 'ምስል',
-                    stats_title: 'የሽያጭ ስታቲስቲክስ',
-                    stats_total_sales: 'ጠቅላላ ሽያጭ',
-                    stats_total_revenue: 'ጠቅላላ ገቢ',
-                    stats_orders: 'ትዕዛዞች',
-                    stats_history: 'የግዢ ታሪክ',
-                    stats_no_sales: 'እስካሁን ሽያጭ አልተመዘገበም።',
-                    stats_date: 'ቀን',
-                    stats_buyer: 'ገዢ',
-                    stats_items: 'ዕቃዎች',
-                    stats_total: 'ጠቅላላ',
-                }
-            };
-
-            function t(key) {
-                return translations[currentLang]?.[key] || translations.en[key] || key;
-            }
-
-            // =========================================================
-            // RENDER FUNCTIONS (shortened)
-            // =========================================================
-            function renderProducts(category) {
-                const grid = document.getElementById('productGrid');
-                const filtered = category === 'all' ? products : products.filter(p => p.category === category);
-
-                if (filtered.length === 0) {
-                    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-box-open"></i><p>${t('no_products')}</p></div>`;
-                    return;
-                }
-
-                grid.innerHTML = filtered.map(p => {
-                    const name = currentLang === 'am' ? (p.nameAm || p.name) : (p.nameEn || p.name);
-                    const desc = currentLang === 'am' ? (p.descriptionAm || p.description) : (p.descriptionEn || p
-                        .description);
-                    const catLabel = {
-                        educational: t('cat_edu'),
-                        cosmetics: t('cat_cos'),
-                        electronics: t('cat_elec')
-                    } [p.category] || p.category;
-
-                    return `
-                        <div class="product-card" data-id="${p.id}">
-                            <div class="product-img">
-                                ${p.image ? `<img src="${p.image}" alt="${name}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=img-placeholder><i class=fas fa-image></i></div>'"/>` 
-                                : `<div class="img-placeholder"><i class="fas fa-image"></i></div>`}
-                            </div>
-                            <div class="product-body">
-                                <span class="cat-tag">${catLabel}</span>
-                                <h3>${name}</h3>
-                                <div class="price">${p.price} <span>${t('price_unit')}</span></div>
-                                <div class="desc">${desc}</div>
-                                <div class="actions">
-                                    <button class="btn-add" data-id="${p.id}"><i class="fas fa-cart-plus"></i> ${t('add_to_cart')}</button>
-                                    <button class="btn-buy" data-id="${p.id}"><i class="fas fa-bolt"></i> ${t('buy_now')}</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                grid.querySelectorAll('.btn-add').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        addToCart(btn.dataset.id);
-                    });
-                });
-                grid.querySelectorAll('.btn-buy').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        buyNow(btn.dataset.id);
-                    });
-                });
-                grid.querySelectorAll('.product-card').forEach(card => {
-                    card.addEventListener('click', () => {
-                        showDetail(card.dataset.id);
-                    });
-                });
-            }
-
-            function renderCart() {
-                const container = document.getElementById('cartItems');
-                const footer = document.getElementById('cartFooter');
-
-                if (cart.length === 0) {
-                    container.innerHTML =
-                        `<div class="empty-state" id="emptyCart"><i class="fas fa-cart-plus"></i><p>${t('cart_empty')}</p></div>`;
-                    footer.style.display = 'none';
-                    return;
-                }
-
-                footer.style.display = 'block';
-                let html = '';
-                let total = 0;
-
-                cart.forEach(item => {
-                    const p = products.find(pr => pr.id === item.id);
-                    if (!p) return;
-                    const name = currentLang === 'am' ? (p.nameAm || p.name) : (p.nameEn || p.name);
-                    const subtotal = p.price * item.qty;
-                    total += subtotal;
-                    html += `
-                        <div class="cart-item" data-id="${p.id}">
-                            <img src="${p.image || ''}" alt="${name}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2256%22 height=%2256%22 viewBox=%220 0 56 56%22%3E%3Crect width=%2256%22 height=%2256%22 fill=%22%23f0f4f8%22/%3E%3Ctext x=%2228%22 y=%2234%22 text-anchor=%22middle%22 font-size=%2224%22 fill=%22%23aab4c0%22%3E📷%3C/text%3E%3C/svg%3E'">
-                            <div class="cart-item-info">
-                                <h4>${name}</h4>
-                                <div class="cart-price">${p.price} ${t('price_unit')}</div>
-                            </div>
-                            <div class="qty-control">
-                                <button class="qty-down" data-id="${p.id}">−</button>
-                                <span>${item.qty}</span>
-                                <button class="qty-up" data-id="${p.id}">+</button>
-                            </div>
-                            <button class="remove-item" data-id="${p.id}"><i class="fas fa-trash-alt"></i></button>
-                        </div>
-                    `;
-                });
-
-                container.innerHTML = html;
-                document.getElementById('cartTotal').textContent = `${total} ${t('price_unit')}`;
-                updateCartBadge();
-
-                container.querySelectorAll('.qty-up').forEach(btn => {
-                    btn.addEventListener('click', () => updateQty(btn.dataset.id, 1));
-                });
-                container.querySelectorAll('.qty-down').forEach(btn => {
-                    btn.addEventListener('click', () => updateQty(btn.dataset.id, -1));
-                });
-                container.querySelectorAll('.remove-item').forEach(btn => {
-                    btn.addEventListener('click', () => removeFromCart(btn.dataset.id));
-                });
-            }
-
-            function updateCartBadge() {
-                const count = cart.reduce((sum, i) => sum + i.qty, 0);
-                document.getElementById('cartCount').textContent = count;
-                document.getElementById('cartBadge').textContent = count;
-            }
-
-            // =========================================================
-            // CART OPERATIONS
-            // =========================================================
-            function addToCart(id) {
-                const existing = cart.find(item => item.id === id);
-                if (existing) {
-                    existing.qty += 1;
-                } else {
-                    cart.push({ id, qty: 1 });
-                }
-                saveCart();
-                renderCart();
-                showToast(t('toast_added'), 'success');
-            }
-
-            function updateQty(id, delta) {
-                const item = cart.find(i => i.id === id);
-                if (!item) return;
-                item.qty += delta;
-                if (item.qty <= 0) {
-                    cart = cart.filter(i => i.id !== id);
-                }
-                saveCart();
-                renderCart();
-            }
-
-            function removeFromCart(id) {
-                cart = cart.filter(i => i.id !== id);
-                saveCart();
-                renderCart();
-            }
-
-            function buyNow(id) {
-                const p = products.find(pr => pr.id === id);
-                if (!p) return;
-                const existing = cart.find(item => item.id === id);
-                if (existing) {
-                    existing.qty += 1;
-                } else {
-                    cart.push({ id, qty: 1 });
-                }
-                saveCart();
-                renderCart();
-                openCheckout();
-            }
-
-            // =========================================================
-            // CHECKOUT & TELEGRAM
-            // =========================================================
-            function openCheckout() {
-                if (cart.length === 0) {
-                    showToast(t('cart_empty'), 'error');
-                    return;
-                }
-                const total = cart.reduce((sum, i) => {
-                    const p = products.find(pr => pr.id === i.id);
-                    return sum + (p ? p.price * i.qty : 0);
-                }, 0);
-                const count = cart.reduce((sum, i) => sum + i.qty, 0);
-                document.getElementById('orderItemCount').textContent = count;
-                document.getElementById('orderTotal').textContent = `${total} ${t('price_unit')}`;
-                document.getElementById('orderPayable').textContent = `${total} ${t('price_unit')}`;
-                document.getElementById('checkoutOverlay').classList.add('open');
-                closeCart();
-            }
-
-            function closeCheckout() {
-                document.getElementById('checkoutOverlay').classList.remove('open');
-            }
-
-            async function sendToTelegram() {
-                if (cart.length === 0) {
-                    showToast(t('cart_empty'), 'error');
-                    return;
-                }
-                const buyerName = document.getElementById('buyerName').value.trim() || 'Customer';
-                const buyerTelegram = document.getElementById('buyerTelegram').value.trim() || 'Not provided';
-
-                let message = `🛒 *New Order from ${buyerName}*\n`;
-                message += `👤 Telegram: ${buyerTelegram}\n\n`;
-                let total = 0;
-                cart.forEach(item => {
-                    const p = products.find(pr => pr.id === item.id);
-                    if (!p) return;
-                    const name = currentLang === 'am' ? (p.nameAm || p.name) : (p.nameEn || p.name);
-                    const subtotal = p.price * item.qty;
-                    total += subtotal;
-                    message += `• ${name} x${item.qty} = ${subtotal} ${t('price_unit')}\n`;
-                });
-                message += `\n💰 *Total: ${total} ${t('price_unit')}*`;
-                message += `\n\n🔗 Please confirm order.`;
-
-                const encoded = encodeURIComponent(message);
-                const url = `https://t.me/sky_dooper?text=${encoded}`;
-
-                await recordSale(buyerName, buyerTelegram);
-
-                window.open(url, '_blank');
-
-                cart = [];
-                saveCart();
-                renderCart();
-                closeCheckout();
-                showToast('Order sent to Telegram!', 'success');
-            }
-
-            async function recordSale(buyerName, buyerTelegram) {
-                const items = cart.map(item => {
-                    const p = products.find(pr => pr.id === item.id);
-                    return {
-                        id: item.id,
-                        name: p ? (currentLang === 'am' ? (p.nameAm || p.name) : (p.nameEn || p.name)) : 'Unknown',
-                        qty: item.qty,
-                        price: p ? p.price : 0
-                    };
-                });
-                const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-                const sale = {
-                    date: new Date().toISOString(),
-                    buyerName: buyerName || 'Anonymous',
-                    buyerTelegram: buyerTelegram || '',
-                    items: items,
-                    total: total
-                };
-                await addSaleToFirebase(sale);
-            }
-
-            // =========================================================
-            // PRODUCT DETAIL MODAL
-            // =========================================================
-            let currentDetailId = null;
-
-            function showDetail(id) {
-                const p = products.find(pr => pr.id === id);
-                if (!p) return;
-                currentDetailId = id;
-                const name = currentLang === 'am' ? (p.nameAm || p.name) : (p.nameEn || p.name);
-                const desc = currentLang === 'am' ? (p.descriptionAm || p.description) : (p.descriptionEn || p.description);
-                const catLabel = {
-                    educational: t('cat_edu'),
-                    cosmetics: t('cat_cos'),
-                    electronics: t('cat_elec')
-                } [p.category] || p.category;
-
-                document.getElementById('detailImg').src = p.image || '';
-                document.getElementById('detailImg').onerror = function() { this.style.display = 'none'; };
-                document.getElementById('detailCat').textContent = catLabel;
-                document.getElementById('detailName').textContent = name;
-                document.getElementById('detailPrice').textContent = `${p.price} ${t('price_unit')}`;
-                document.getElementById('detailDesc').textContent = desc;
-
-                document.getElementById('detailAddBtn').dataset.id = id;
-                document.getElementById('detailBuyBtn').dataset.id = id;
-                document.getElementById('detailAddBtn').innerHTML = `<i class="fas fa-cart-plus"></i> ${t('add_to_cart')}`;
-                document.getElementById('detailBuyBtn').innerHTML = `<i class="fas fa-bolt"></i> ${t('buy_now')}`;
-
-                document.getElementById('detailOverlay').classList.add('open');
-            }
-
-            function closeDetail() {
-                document.getElementById('detailOverlay').classList.remove('open');
-            }
-
-            // =========================================================
-            // ADMIN
-            // =========================================================
-            function openAdmin() {
-                document.getElementById('adminOverlay').classList.add('open');
-                document.getElementById('adminPassword').value = '';
-                document.getElementById('adminPassword').focus();
-                document.getElementById('adminError').style.display = 'none';
-            }
-
-            function closeAdmin() {
-                document.getElementById('adminOverlay').classList.remove('open');
-            }
-
-            function adminLogin() {
-                const pwd = document.getElementById('adminPassword').value;
-                if (pwd === ADMIN_PASSWORD) {
-                    isAdmin = true;
-                    closeAdmin();
-                    showToast(t('toast_login_success'), 'success');
-                    document.getElementById('adminDash').classList.add('active');
-                    renderAdminProducts();
-                    renderStats();
-                    document.getElementById('adminOpen').style.display = 'none';
-                } else {
-                    document.getElementById('adminError').style.display = 'block';
-                }
-            }
-
-            function adminLogout() {
-                isAdmin = false;
-                document.getElementById('adminDash').classList.remove('active');
-                document.getElementById('adminOpen').style.display = 'block';
-                showToast(t('toast_logout'), 'info');
-                renderProducts(currentCategory);
-            }
-
-            function renderAdminProducts() {
-                const list = document.getElementById('adminProductList');
-                if (products.length === 0) {
-                    list.innerHTML = `<div class="empty-state" style="padding:30px;"><p>${t('admin_no_products')}</p></div>`;
-                    return;
-                }
-                const cats = { educational: t('cat_edu'), cosmetics: t('cat_cos'), electronics: t('cat_elec') };
-                list.innerHTML = `
-                    <div class="list-header">
-                        <span>#</span>
-                        <span>${t('product_name')}</span>
-                        <span>${t('product_cat')}</span>
-                        <span>${t('product_price')}</span>
-                        <span>${t('admin_edit')}</span>
-                        <span>${t('admin_delete')}</span>
-                    </div>
-                    ${products.map((p, idx) => {
-                        const name = currentLang === 'am' ? (p.nameAm || p.name) : (p.nameEn || p.name);
-                        return `
-                            <div class="list-item" data-id="${p.id}">
-                                <span>${idx+1}</span>
-                                <span style="display:flex;align-items:center;gap:8px;">
-                                    <img src="${p.image || ''}" alt="" onerror="this.style.display='none'"/>
-                                    ${name}
-                                </span>
-                                <span>${cats[p.category] || p.category}</span>
-                                <span>${p.price}</span>
-                                <span><button class="edit-btn" data-id="${p.id}">${t('admin_edit')}</button></span>
-                                <span><button class="del-btn" data-id="${p.id}">${t('admin_delete')}</button></span>
-                            </div>
-                        `;
-                    }).join('')}
-                `;
-
-                list.querySelectorAll('.edit-btn').forEach(btn => {
-                    btn.addEventListener('click', () => editProduct(btn.dataset.id));
-                });
-                list.querySelectorAll('.del-btn').forEach(btn => {
-                    btn.addEventListener('click', () => deleteProduct(btn.dataset.id));
-                });
-            }
-
-            function editProduct(id) {
-                const p = products.find(pr => pr.id === id);
-                if (!p) return;
-                document.getElementById('editId').value = p.id;
-                document.getElementById('editName').value = p.name || '';
-                document.getElementById('editNameAm').value = p.nameAm || '';
-                document.getElementById('editNameEn').value = p.nameEn || '';
-                document.getElementById('editCategory').value = p.category || 'educational';
-                document.getElementById('editPrice').value = p.price || '';
-                document.getElementById('editDescription').value = p.description || '';
-                document.getElementById('editDescriptionAm').value = p.descriptionAm || '';
-                document.getElementById('editDescriptionEn').value = p.descriptionEn || '';
-                document.getElementById('editImage').value = p.image || '';
-                document.getElementById('editForm').classList.remove('hidden');
-                document.getElementById('editForm').scrollIntoView({ behavior: 'smooth' });
-                document.getElementById('editFormTitle').textContent = t('admin_edit_product');
-                document.getElementById('editSubmitBtn').textContent = t('admin_update');
-            }
-
-            function cancelEdit() {
-                document.getElementById('editForm').classList.add('hidden');
-                document.getElementById('editId').value = '';
-            }
-
-            async function saveProductEdit(e) {
-                e.preventDefault();
-                const id = document.getElementById('editId').value;
-                const name = document.getElementById('editName').value.trim();
-                const nameAm = document.getElementById('editNameAm').value.trim();
-                const nameEn = document.getElementById('editNameEn').value.trim();
-                const category = document.getElementById('editCategory').value;
-                const price = parseFloat(document.getElementById('editPrice').value);
-                const description = document.getElementById('editDescription').value.trim();
-                const descriptionAm = document.getElementById('editDescriptionAm').value.trim();
-                const descriptionEn = document.getElementById('editDescriptionEn').value.trim();
-                const image = document.getElementById('editImage').value.trim();
-
-                if (!name || !price || !category) {
-                    showToast('Please fill in name, price and category', 'error');
-                    return;
-                }
-
-                if (id) {
-                    const data = {
-                        name,
-                        nameAm: nameAm || name,
-                        nameEn: nameEn || name,
-                        category,
-                        price,
-                        description: description || '',
-                        descriptionAm: descriptionAm || description || '',
-                        descriptionEn: descriptionEn || description || '',
-                        image: image || ''
-                    };
-                    await updateProductInFirebase(id, data);
-                } else {
-                    const newProduct = {
-                        name,
-                        nameAm: nameAm || name,
-                        nameEn: nameEn || name,
-                        category,
-                        price,
-                        description: description || '',
-                        descriptionAm: descriptionAm || description || '',
-                        descriptionEn: descriptionEn || description || '',
-                        image: image || '',
-                    };
-                    await addProductToFirebase(newProduct);
-                }
-
-                cancelEdit();
-                renderAdminProducts();
-                renderProducts(currentCategory);
-                renderCart();
-            }
-
-            async function deleteProduct(id) {
-                if (!confirm(currentLang === 'am' ? 'እርግጠኛ ነዎት ይህን ምርት መሰረዝ ይፈልጋሉ?' : 'Are you sure you want to delete this product?')) return;
-                await deleteProductFromFirebase(id);
-                renderAdminProducts();
-                renderProducts(currentCategory);
-                renderCart();
-            }
-
-            // =========================================================
-            // STATS
-            // =========================================================
-            let salesChart = null;
-
-            function renderStats() {
-                const totalSales = sales.length;
-                const totalRevenue = sales.reduce((sum, s) => sum + s.total, 0);
-                document.getElementById('statTotalSales').textContent = totalSales;
-                document.getElementById('statTotalRevenue').textContent = `${totalRevenue} ${t('price_unit')}`;
-                document.getElementById('statOrders').textContent = totalSales;
-
-                const tbody = document.getElementById('salesHistoryBody');
-                if (sales.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="4" class="empty-history">${t('stats_no_sales')}</td></tr>`;
-                } else {
-                    tbody.innerHTML = sales.slice().reverse().map(s => {
-                        const date = new Date(s.date).toLocaleDateString(currentLang === 'am' ? 'am-ET' :
-                        'en-US');
-                        const itemsList = s.items.map(i => `${i.name} x${i.qty}`).join(', ');
-                        return `
-                            <tr>
-                                <td>${date}</td>
-                                <td>${s.buyerName} ${s.buyerTelegram ? '('+s.buyerTelegram+')' : ''}</td>
-                                <td>${itemsList}</td>
-                                <td>${s.total} ${t('price_unit')}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
-
-                const ctx = document.getElementById('salesChart').getContext('2d');
-                if (salesChart) salesChart.destroy();
-
-                const salesByDate = {};
-                sales.forEach(s => {
-                    const d = new Date(s.date).toISOString().split('T')[0];
-                    salesByDate[d] = (salesByDate[d] || 0) + s.total;
-                });
-                const labels = Object.keys(salesByDate).sort();
-                const data = labels.map(d => salesByDate[d]);
-
-                salesChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: t('stats_total_revenue'),
-                            data: data,
-                            backgroundColor: 'rgba(26, 138, 74, 0.6)',
-                            borderColor: 'rgba(26, 138, 74, 1)',
-                            borderWidth: 1,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                ticks: { callback: function(value) { return value + ' ' + t('price_unit'); } }
-                            }
-                        }
-                    }
-                });
-            }
-
-            // =========================================================
-            // THEME
-            // =========================================================
-            function setTheme(theme) {
-                currentTheme = theme;
-                localStorage.setItem(THEME_KEY, theme);
-                if (theme === 'dark') {
-                    document.body.classList.add('dark');
-                    document.getElementById('themeIcon').className = 'fas fa-sun';
-                } else {
-                    document.body.classList.remove('dark');
-                    document.getElementById('themeIcon').className = 'fas fa-moon';
-                }
-            }
-
-            function toggleTheme() {
-                setTheme(currentTheme === 'light' ? 'dark' : 'light');
-            }
-
-            // =========================================================
-            // LANGUAGE
-            // =========================================================
-            function setLanguage(lang) {
-                currentLang = lang;
-                localStorage.setItem(LANG_KEY, lang);
-                document.getElementById('langLabel').textContent = lang === 'en' ? 'አማርኛ' : 'English';
-                document.querySelectorAll('[data-i18n]').forEach(el => {
-                    const key = el.dataset.i18n;
-                    if (translations[lang]?.[key] !== undefined) {
-                        el.textContent = translations[lang][key];
-                    }
-                });
-                renderProducts(currentCategory);
-                renderCart();
-                if (isAdmin) {
-                    renderAdminProducts();
-                    renderStats();
-                }
-                document.querySelectorAll('.category-tabs button').forEach(btn => {
-                    const span = btn.querySelector('span');
-                    if (span) {
-                        const key = {
-                            'all': 'cat_all',
-                            'educational': 'cat_edu',
-                            'cosmetics': 'cat_cos',
-                            'electronics': 'cat_elec'
-                        } [btn.dataset.cat];
-                        if (key) span.textContent = t(key);
-                    }
-                });
-                if (document.getElementById('detailOverlay').classList.contains('open')) {
-                    showDetail(currentDetailId);
-                }
-            }
-
-            // =========================================================
-            // TOAST
-            // =========================================================
-            function showToast(message, type = 'info') {
-                const container = document.getElementById('toastContainer');
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                const icon = { success: '✅', error: '❌', info: 'ℹ️' } [type] || 'ℹ️';
-                toast.innerHTML = `<span>${icon}</span> ${message}`;
-                container.appendChild(toast);
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    toast.style.transform = 'translateX(40px)';
-                    setTimeout(() => toast.remove(), 400);
-                }, 3000);
-            }
-
-            // =========================================================
-            // UI HELPERS
-            // =========================================================
-            function openCart() {
-                document.getElementById('cartOverlay').classList.add('open');
-                document.getElementById('cartSidebar').classList.add('open');
-                renderCart();
-            }
-
-            function closeCart() {
-                document.getElementById('cartOverlay').classList.remove('open');
-                document.getElementById('cartSidebar').classList.remove('open');
-            }
-
-            // =========================================================
-            // INIT
-            // =========================================================
-            async function init() {
-                setTheme(currentTheme);
-                setLanguage(currentLang);
-                loadCart();
-
-                listenToProducts();
-                listenToSales();
-
-                // ---- EVENTS ----
-                document.querySelectorAll('.category-tabs button').forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        document.querySelectorAll('.category-tabs button').forEach(b => b.classList.remove(
-                            'active'));
-                        this.classList.add('active');
-                        currentCategory = this.dataset.cat;
-                        renderProducts(currentCategory);
-                    });
-                });
-
-                document.getElementById('cartToggle').addEventListener('click', openCart);
-                document.getElementById('cartClose').addEventListener('click', closeCart);
-                document.getElementById('cartOverlay').addEventListener('click', closeCart);
-
-                document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-
-                document.getElementById('langToggle').addEventListener('click', function() {
-                    const next = currentLang === 'en' ? 'am' : 'en';
-                    setLanguage(next);
-                });
-
-                document.getElementById('adminOpen').addEventListener('click', openAdmin);
-                document.getElementById('adminClose').addEventListener('click', closeAdmin);
-                document.getElementById('adminLoginBtn').addEventListener('click', adminLogin);
-                document.getElementById('adminPassword').addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter') adminLogin();
-                });
-                document.getElementById('adminDashClose').addEventListener('click', adminLogout);
-                document.getElementById('addProductBtn').addEventListener('click', function() {
-                    document.getElementById('editId').value = '';
-                    document.getElementById('editName').value = '';
-                    document.getElementById('editNameAm').value = '';
-                    document.getElementById('editNameEn').value = '';
-                    document.getElementById('editCategory').value = 'educational';
-                    document.getElementById('editPrice').value = '';
-                    document.getElementById('editDescription').value = '';
-                    document.getElementById('editDescriptionAm').value = '';
-                    document.getElementById('editDescriptionEn').value = '';
-                    document.getElementById('editImage').value = '';
-                    document.getElementById('editForm').classList.remove('hidden');
-                    document.getElementById('editFormTitle').textContent = t('admin_add_product');
-                    document.getElementById('editSubmitBtn').textContent = t('admin_save');
-                    document.getElementById('editForm').scrollIntoView({ behavior: 'smooth' });
-                });
-                document.getElementById('editCancelBtn').addEventListener('click', cancelEdit);
-                document.getElementById('editForm').addEventListener('submit', saveProductEdit);
-                document.getElementById('imageUpload').addEventListener('change', function(e) {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    const reader = new FileReader();
-                    reader.onload = function(ev) {
-                        document.getElementById('editImage').value = ev.target.result;
-                        showToast('Image loaded!', 'success');
-                    };
-                    reader.readAsDataURL(file);
-                });
-
-                document.getElementById('detailClose').addEventListener('click', closeDetail);
-                document.getElementById('detailOverlay').addEventListener('click', function(e) {
-                    if (e.target === this) closeDetail();
-                });
-                document.getElementById('detailAddBtn').addEventListener('click', function() {
-                    const id = this.dataset.id;
-                    if (id) {
-                        addToCart(id);
-                        closeDetail();
-                    }
-                });
-                document.getElementById('detailBuyBtn').addEventListener('click', function() {
-                    const id = this.dataset.id;
-                    if (id) {
-                        buyNow(id);
-                        closeDetail();
-                    }
-                });
-
-                document.getElementById('checkoutBtn').addEventListener('click', openCheckout);
-                document.getElementById('checkoutClose').addEventListener('click', closeCheckout);
-                document.getElementById('checkoutOverlay').addEventListener('click', function(e) {
-                    if (e.target === this) closeCheckout();
-                });
-                document.getElementById('checkoutTelegramBtn').addEventListener('click', sendToTelegram);
-
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape') {
-                        closeCart();
-                        closeCheckout();
-                        closeAdmin();
-                        closeDetail();
-                    }
-                });
-
-                document.getElementById('adminOverlay').addEventListener('click', function(e) {
-                    if (e.target === this && !isAdmin) closeAdmin();
-                });
-
-                console.log('🚀 SkyShop with Firebase initialized!');
-            }
-
-            // Run
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', init);
-            } else {
-                init();
-            }
-
-            // Expose
-            window.__skyshop = {
-                products: () => products,
-                cart: () => cart,
-                sales: () => sales,
-                clearCart: () => { cart = [];
-                    saveCart();
-                    renderCart(); },
-            };
-
-        })();
-    </script>
-
-    <!-- ===== ADMIN DASHBOARD ===== -->
-    <div class="container admin-dash" id="adminDash">
-        <div class="dash-header">
-            <h2><i class="fas fa-user-shield" style="color:var(--gold);"></i> <span data-i18n="admin_dash_title">የአስተዳዳሪ መቆጣጠሪያ</span></h2>
-            <div class="admin-actions-top">
-                <button class="btn-primary" id="addProductBtn"><i class="fas fa-plus"></i> <span data-i18n="admin_add_product">ምርት ጨምር</span></button>
-                <button class="btn-secondary" id="adminDashClose"><i class="fas fa-sign-out-alt"></i> <span data-i18n="admin_close">ዝጋ</span></button>
+  </div>
+
+  <script>
+    (function(){
+      // ---------- DATA ----------
+      let products = [
+        { id: 1, title: 'Calculus Textbook', price: 350, category: 'Educational', desc: 'New edition, essential for first-year engineering.', image: 'https://picsum.photos/seed/calc/300/300', rating: 4.2, comment: 'Clear explanations' },
+        { id: 2, title: 'Lipstick Set', price: 280, category: 'Cosmetics', desc: 'Matte finish, 6 trendy colors.', image: 'https://picsum.photos/seed/lip/300/300', rating: 4.8, comment: 'Love the shades!' },
+        { id: 3, title: 'Wireless Mouse', price: 450, category: 'Electronics', desc: 'Silent click, Bluetooth 5.0.', image: 'https://picsum.photos/seed/mouse/300/300', rating: 4.0, comment: 'Good battery life' },
+        { id: 4, title: 'Physics Lab Manual', price: 210, category: 'Educational', desc: 'Practical experiments for second year.', image: 'https://picsum.photos/seed/phys/300/300', rating: 3.9, comment: 'Very useful' },
+        { id: 5, title: 'Face Cream', price: 180, category: 'Cosmetics', desc: 'Moisturizing with SPF 30.', image: 'https://picsum.photos/seed/cream/300/300', rating: 4.5, comment: 'Great for dry skin' },
+        { id: 6, title: 'USB-C Charger', price: 320, category: 'Electronics', desc: 'Fast charging 65W.', image: 'https://picsum.photos/seed/charger/300/300', rating: 4.1, comment: 'Works perfectly' }
+      ];
+      let nextId = 7;
+      let selectedProductId = null; // for detail modal
+      let currentLang = 'en'; // 'en' or 'am'
+
+      // DOM refs
+      const grid = document.getElementById('productGrid');
+      const detailModal = document.getElementById('detailModal');
+      const orderFormModal = document.getElementById('orderFormModal');
+      const adminModal = document.getElementById('adminModal');
+
+      // detail elements
+      const detailTitle = document.getElementById('detailTitle');
+      const detailImage = document.getElementById('detailImage');
+      const detailPrice = document.getElementById('detailPrice');
+      const detailCategory = document.getElementById('detailCategory');
+      const detailDesc = document.getElementById('detailDesc');
+      const detailRating = document.getElementById('detailRating');
+      const detailComment = document.getElementById('detailComment');
+      const orderBtn = document.getElementById('orderBtn');
+
+      // order form
+      const orderForm = document.getElementById('orderForm');
+      const fullName = document.getElementById('fullName');
+      const campusDorm = document.getElementById('campusDorm');
+      const studentId = document.getElementById('studentId');
+      const phoneNumber = document.getElementById('phoneNumber');
+
+      // admin
+      const adminLoginGate = document.getElementById('adminLoginGate');
+      const adminPanelContent = document.getElementById('adminPanelContent');
+      const adminPassInput = document.getElementById('adminPassInput');
+      const adminLoginBtn = document.getElementById('adminLoginBtn');
+      const adminPassError = document.getElementById('adminPassError');
+      const adminProductSelect = document.getElementById('adminProductSelect');
+      const adminTitle = document.getElementById('adminTitle');
+      const adminPrice = document.getElementById('adminPrice');
+      const adminCategory = document.getElementById('adminCategory');
+      const adminDesc = document.getElementById('adminDesc');
+      const adminImageUrl = document.getElementById('adminImageUrl');
+      const adminImageFile = document.getElementById('adminImageFile');
+      const adminAddBtn = document.getElementById('adminAddBtn');
+      const adminDeleteBtn = document.getElementById('adminDeleteBtn');
+
+      // language toggle
+      const langToggle = document.getElementById('langToggle');
+      const langLabel = document.getElementById('langLabel');
+      const headerSub = document.getElementById('headerSub');
+
+      // ---------- RENDER ----------
+      function renderProducts(filter = 'all') {
+        let filtered = filter === 'all' ? products : products.filter(p => p.category === filter);
+        grid.innerHTML = '';
+        if (filtered.length === 0) {
+          grid.innerHTML = '<div class="col-span-2 text-center text-gray-400 py-8">No products found</div>';
+          return;
+        }
+        filtered.forEach(p => {
+          const card = document.createElement('div');
+          card.className = 'product-card bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 cursor-pointer';
+          card.setAttribute('data-id', p.id);
+          card.innerHTML = `
+            <div class="relative">
+              <img src="${p.image}" alt="${p.title}" class="w-full h-32 object-cover">
+              <span class="absolute top-2 left-2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full">${p.category}</span>
             </div>
-        </div>
-
-        <!-- Edit / Add Form -->
-        <div class="product-form hidden" id="editForm">
-            <h3 id="editFormTitle" data-i18n="admin_edit_product">ምርት አርትዕ</h3>
-            <form id="editFormElement">
-                <input type="hidden" id="editId" />
-                <div class="form-row">
-                    <div><label data-i18n="admin_name">ስም (አማርኛ)</label><input type="text" id="editNameAm" placeholder="ስም በአማርኛ" /></div>
-                    <div><label data-i18n="admin_name">ስም (እንግሊዝኛ)</label><input type="text" id="editNameEn" placeholder="Name in English" /></div>
-                </div>
-                <div class="form-row">
-                    <div><label data-i18n="admin_name">ስም (ዋና)</label><input type="text" id="editName" placeholder="ዋና ስም" required /></div>
-                    <div><label data-i18n="admin_category">ምድብ</label>
-                        <select id="editCategory">
-                            <option value="educational">📚 የትምህርት</option>
-                            <option value="cosmetics">🧴 መዋቢያ</option>
-                            <option value="electronics">💻 ኤሌክትሮኒክስ</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div><label data-i18n="admin_price">ዋጋ (ብር)</label><input type="number" id="editPrice" placeholder="0" required step="0.01" /></div>
-                    <div><label data-i18n="admin_image">የምስል አድራሻ</label><input type="text" id="editImage" placeholder="https://... or base64" /></div>
-                </div>
-                <div class="form-row full">
-                    <div><label data-i18n="admin_image_upload">ወይም ምስል ይጫኑ</label><input type="file" id="imageUpload" accept="image/*" /></div>
-                </div>
-                <div class="form-row full">
-                    <div><label data-i18n="admin_description">መግለጫ (አማርኛ)</label><textarea id="editDescriptionAm" placeholder="መግለጫ በአማርኛ"></textarea></div>
-                </div>
-                <div class="form-row full">
-                    <div><label data-i18n="admin_description">መግለጫ (እንግሊዝኛ)</label><textarea id="editDescriptionEn" placeholder="Description in English"></textarea></div>
-                </div>
-                <div class="form-row full">
-                    <div><label data-i18n="admin_description">መግለጫ (ዋና)</label><textarea id="editDescription" placeholder="ዋና መግለጫ"></textarea></div>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn-primary" id="editSubmitBtn" data-i18n="admin_update">አዘምን</button>
-                    <button type="button" class="btn-secondary" id="editCancelBtn" data-i18n="admin_cancel_edit">ሰርዝ</button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Product List -->
-        <div class="product-list-admin" id="adminProductList">
-            <div class="empty-state" style="padding:30px;"><p data-i18n="admin_no_products">ምርት የለም</p></div>
-        </div>
-
-        <!-- Stats Section -->
-        <div class="stats-section">
-            <h3><i class="fas fa-chart-bar" style="color:var(--gold);"></i> <span data-i18n="stats_title">የሽያጭ ስታቲስቲክስ</span></h3>
-            <div class="stats-grid">
-                <div class="stat-card"><div class="stat-number" id="statTotalSales">0</div><div class="stat-label" data-i18n="stats_total_sales">ጠቅላላ ሽያጭ</div></div>
-                <div class="stat-card"><div class="stat-number" id="statTotalRevenue">0 ብር</div><div class="stat-label" data-i18n="stats_total_revenue">ጠቅላላ ገቢ</div></div>
-                <div class="stat-card"><div class="stat-number" id="statOrders">0</div><div class="stat-label" data-i18n="stats_orders">ትዕዛዞች</div></div>
+            <div class="p-2.5">
+              <h4 class="font-semibold text-sm truncate">${p.title}</h4>
+              <div class="flex justify-between items-center mt-1">
+                <span class="text-indigo-700 font-bold text-sm">${p.price} ETB</span>
+                <span class="text-amber-400 text-xs">⭐ ${p.rating}</span>
+              </div>
             </div>
-            <div class="chart-container"><canvas id="salesChart"></canvas></div>
-            <div class="sales-history">
-                <h4 data-i18n="stats_history">የግዢ ታሪክ</h4>
-                <table>
-                    <thead><tr><th data-i18n="stats_date">ቀን</th><th data-i18n="stats_buyer">ገዢ</th><th data-i18n="stats_items">ዕቃዎች</th><th data-i18n="stats_total">ጠቅላላ</th></tr></thead>
-                    <tbody id="salesHistoryBody"><tr><td colspan="4" class="empty-history" data-i18n="stats_no_sales">እስካሁን ሽያጭ አልተመዘገበም።</td></tr></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+          `;
+          card.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openDetail(p.id);
+          });
+          grid.appendChild(card);
+        });
+        updateAdminSelect();
+      }
 
+      // ---------- DETAIL MODAL ----------
+      function openDetail(id) {
+        const p = products.find(pr => pr.id === id);
+        if (!p) return;
+        selectedProductId = p.id;
+        detailTitle.textContent = p.title;
+        detailImage.src = p.image;
+        detailPrice.textContent = `${p.price} ETB`;
+        detailCategory.textContent = p.category;
+        detailDesc.textContent = p.desc;
+        // rating stars
+        const stars = '★'.repeat(Math.floor(p.rating)) + '☆'.repeat(5 - Math.floor(p.rating));
+        detailRating.textContent = stars;
+        detailComment.textContent = `"${p.comment || 'Great product!'}"`;
+        detailModal.classList.remove('hidden');
+      }
+
+      function closeDetail() {
+        detailModal.classList.add('hidden');
+      }
+
+      // ---------- ORDER FORM ----------
+      function openOrderForm() {
+        orderFormModal.classList.remove('hidden');
+      }
+
+      // submit order -> Telegram @sky_dooper
+      function submitOrder(e) {
+        e.preventDefault();
+        const name = fullName.value.trim();
+        const campus = campusDorm.value.trim();
+        const sid = studentId.value.trim();
+        const phone = phoneNumber.value.trim();
+        if (!name || !campus || !sid || !phone) {
+          alert('Please fill all fields.');
+          return;
+        }
+        const product = products.find(p => p.id === selectedProductId);
+        const productTitle = product ? product.title : 'Product';
+        const msg = `📦 *New Order*%0A📌 Product: ${productTitle}%0A👤 Name: ${name}%0A🏫 Campus/Dorm: ${campus}%0A🆔 Student ID: ${sid}%0A📞 Phone: ${phone}`;
+        const url = `https://t.me/sky_dooper?text=${msg}`;
+        window.open(url, '_blank');
+        orderFormModal.classList.add('hidden');
+        orderForm.reset();
+      }
+
+      // ---------- ADMIN ----------
+      function updateAdminSelect() {
+        adminProductSelect.innerHTML = '<option value="">— select product to edit/delete —</option>';
+        products.forEach(p => {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = `${p.title} (${p.price} ETB)`;
+          adminProductSelect.appendChild(opt);
+        });
+      }
+
+      function loadProductToAdmin(id) {
+        const p = products.find(pr => pr.id === id);
+        if (!p) return;
+        adminTitle.value = p.title;
+        adminPrice.value = p.price;
+        adminCategory.value = p.category;
+        adminDesc.value = p.desc;
+        adminImageUrl.value = p.image;
+      }
+
+      function saveProductFromAdmin() {
+        const title = adminTitle.value.trim();
+        const price = parseFloat(adminPrice.value);
+        const category = adminCategory.value;
+        const desc = adminDesc.value.trim();
+        const image = adminImageUrl.value.trim() || 'https://picsum.photos/seed/default/300/300';
+        if (!title || isNaN(price) || price <= 0) {
+          alert('Please enter valid title and price.');
+          return;
+        }
+        const selectedId = adminProductSelect.value;
+        if (selectedId) {
+          // update existing
+          const p = products.find(pr => pr.id == selectedId);
+          if (p) {
+            p.title = title;
+            p.price = price;
+            p.category = category;
+            p.desc = desc;
+            p.image = image;
+          }
+        } else {
+          // add new
+          products.push({
+            id: nextId++,
+            title,
+            price,
+            category,
+            desc,
+            image,
+            rating: (4 + Math.random()).toFixed(1),
+            comment: 'New item'
+          });
+        }
+        renderProducts();
+        updateAdminSelect();
+        // reset form
+        adminTitle.value = '';
+        adminPrice.value = '';
+        adminDesc.value = '';
+        adminImageUrl.value = '';
+        adminProductSelect.value = '';
+        // close admin? keep open
+      }
+
+      function deleteProductFromAdmin() {
+        const id = adminProductSelect.value;
+        if (!id) return alert('Select a product to delete.');
+        if (!confirm('Delete this product permanently?')) return;
+        products = products.filter(p => p.id != id);
+        renderProducts();
+        updateAdminSelect();
+        adminTitle.value = '';
+        adminPrice.value = '';
+        adminDesc.value = '';
+        adminImageUrl.value = '';
+        adminProductSelect.value = '';
+      }
+
+      // Admin password check
+      function handleAdminLogin() {
+        const pass = adminPassInput.value;
+        if (pass === '281888$') {
+          adminLoginGate.classList.add('hidden');
+          adminPanelContent.classList.remove('hidden');
+          adminPassError.classList.add('hidden');
+          updateAdminSelect();
+        } else {
+          adminPassError.classList.remove('hidden');
+        }
+      }
+
+      // ---------- LANGUAGE TOGGLE (EN/AM) ----------
+      function toggleLanguage() {
+        if (currentLang === 'en') {
+          currentLang = 'am';
+          langLabel.textContent = 'English';
+          headerSub.textContent = 'ገበያ';
+          document.documentElement.lang = 'am';
+          document.documentElement.dir = 'rtl';
+          // translate static headers 
+          document.querySelector('#headerSub').textContent = 'ገበያ';
+          // category buttons translation (simple)
+          const catBtns = document.querySelectorAll('.cat-btn');
+          if (catBtns.length >= 4) {
+            catBtns[0].textContent = 'ሁሉም';
+            catBtns[1].textContent = '📚 ትምህርታዊ';
+            catBtns[2].textContent = '💄 መዋቢያ';
+            catBtns[3].textContent = '📱 ኤሌክትሮኒክስ';
+          }
+          // product grid will re-render with english data (we keep data)
+        } else {
+          currentLang = 'en';
+          langLabel.textContent = 'አማርኛ';
+          headerSub.textContent = 'Market';
+          document.documentElement.lang = 'en';
+          document.documentElement.dir = 'ltr';
+          const catBtns = document.querySelectorAll('.cat-btn');
+          if (catBtns.length >= 4) {
+            catBtns[0].textContent = 'All';
+            catBtns[1].textContent = '📚 Educational';
+            catBtns[2].textContent = '💄 Cosmetics';
+            catBtns[3].textContent = '📱 Electronics';
+          }
+        }
+        // re-render to reflect language? product data stays english, but we keep consistent
+        renderProducts();
+      }
+
+      // ---------- EVENT BINDING ----------
+      // Category filter
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('bg-indigo-600', 'text-white'));
+          this.classList.add('bg-indigo-600', 'text-white');
+          const cat = this.dataset.cat;
+          renderProducts(cat);
+        });
+      });
+      // default select all
+      document.querySelector('.cat-btn[data-cat="all"]')?.classList.add('bg-indigo-600', 'text-white');
+
+      // detail close
+      document.getElementById('closeDetail').addEventListener('click', closeDetail);
+      detailModal.addEventListener('click', (e) => { if (e.target === detailModal) closeDetail(); });
+
+      // order button
+      orderBtn.addEventListener('click', openOrderForm);
+      document.getElementById('cancelOrderForm').addEventListener('click', () => {
+        orderFormModal.classList.add('hidden');
+        orderForm.reset();
+      });
+      orderForm.addEventListener('submit', submitOrder);
+
+      // Admin
+      document.getElementById('adminOpenBtn').addEventListener('click', () => {
+        adminModal.classList.remove('hidden');
+        adminPassInput.value = '';
+        adminPassError.classList.add('hidden');
+        // if already logged in, show panel
+        if (!adminLoginGate.classList.contains('hidden')) {
+          adminPanelContent.classList.add('hidden');
+        } else {
+          adminPanelContent.classList.remove('hidden');
+          updateAdminSelect();
+        }
+      });
+      document.getElementById('closeAdmin').addEventListener('click', () => {
+        adminModal.classList.add('hidden');
+      });
+      adminLoginBtn.addEventListener('click', handleAdminLogin);
+      adminPassInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleAdminLogin(); });
+
+      // admin select load
+      adminProductSelect.addEventListener('change', function() {
+        const val = this.value;
+        if (val) loadProductToAdmin(parseInt(val));
+        else { adminTitle.value = ''; adminPrice.value = ''; adminDesc.value = ''; adminImageUrl.value = ''; }
+      });
+
+      adminAddBtn.addEventListener('click', saveProductFromAdmin);
+      adminDeleteBtn.addEventListener('click', deleteProductFromAdmin);
+
+      // image file upload -> base64
+      adminImageFile.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          adminImageUrl.value = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      // language toggle
+      langToggle.addEventListener('click', toggleLanguage);
+
+      // initial render
+      renderProducts();
+
+      // close modals on backdrop click
+      adminModal.addEventListener('click', (e) => { if (e.target === adminModal) adminModal.classList.add('hidden'); });
+      orderFormModal.addEventListener('click', (e) => { if (e.target === orderFormModal) orderFormModal.classList.add('hidden'); });
+
+    })();
+  </script>
 </body>
 </html>
