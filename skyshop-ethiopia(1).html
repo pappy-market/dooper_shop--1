@@ -6,7 +6,6 @@
     <title>SkyShop Ethiopia</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <style>
@@ -1170,16 +1169,16 @@
             'use strict';
 
             // =========================================================
-            // 🔥 FIREBASE CONFIG – YOUR CONFIG IS ALREADY PASTED HERE
+            // 🔥 FIREBASE CONFIG – YOUR NEW CONFIG
             // =========================================================
             const firebaseConfig = {
-                apiKey: "AIzaSyA0y_sD6xLDZjBJTJyFdRtd4XgnPSoDkoc",
+                apiKey: "AIzaSyA6y_sD6xLDZjbJTSyFdRt4XgnPSoDKoc",
                 authDomain: "dooper-shop-fce54.firebaseapp.com",
                 projectId: "dooper-shop-fce54",
                 storageBucket: "dooper-shop-fce54.firebasestorage.app",
                 messagingSenderId: "38979650471",
-                appId: "1:38979650471:web:0e24ed73a5e245d7ba6c82",
-                measurementId: "G-TVV9KESZNY"
+                appId: "1:38979650471:web:ee92250e3d22bbefa6ac82",
+                measurementId: "G=V6GWPY4DWL"
             };
             // =========================================================
 
@@ -1364,99 +1363,13 @@
             }
 
             function getDefaultProducts() {
-                return [{
-                    id: 'p1',
-                    name: 'የትምህርት ማስታወሻ ደብተር / Notebook',
-                    nameAm: 'የትምህርት ማስታወሻ ደብተር',
-                    nameEn: 'Notebook',
-                    price: 85,
-                    description: 'ጥራት ያለው የትምህርት ማስታወሻ ደብተር ለዩኒቨርሲቲ ተማሪዎች',
-                    descriptionAm: 'ጥራት ያለው የትምህርት ማስታወሻ ደብተር ለዩኒቨርሲቲ ተማሪዎች',
-                    descriptionEn: 'Quality notebook for university students',
-                    category: 'educational',
-                    image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=300&fit=crop'
-                }, {
-                    id: 'p2',
-                    name: 'ብርቱ ቦርሳ / Backpack',
-                    nameAm: 'ብርቱ ቦርሳ',
-                    nameEn: 'Backpack',
-                    price: 650,
-                    description: 'ዘላቂ እና ምቹ ቦርሳ ለመጽሃፍ እና ለላፕቶፕ',
-                    descriptionAm: 'ዘላቂ እና ምቹ ቦርሳ ለመጽሃፍ እና ለላፕቶፕ',
-                    descriptionEn: 'Durable and comfortable backpack for books and laptop',
-                    category: 'educational',
-                    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=300&fit=crop'
-                }, {
-                    id: 'p3',
-                    name: 'ካልኩሌተር / Calculator',
-                    nameAm: 'ካልኩሌተር',
-                    nameEn: 'Calculator',
-                    price: 350,
-                    description: 'ሳይንሳዊ ካልኩሌተር ለሂሳብ እና ሳይንስ ተማሪዎች',
-                    descriptionAm: 'ሳይንሳዊ ካልኩሌተር ለሂሳብ እና ሳይንስ ተማሪዎች',
-                    descriptionEn: 'Scientific calculator for math and science students',
-                    category: 'educational',
-                    image: 'https://images.unsplash.com/photo-1587145820266-a5951ee6f620?w=400&h=300&fit=crop'
-                }, {
-                    id: 'p4',
-                    name: 'የንጽህና መዋቢያ ስብስብ / Skincare Set',
-                    nameAm: 'የንጽህና መዋቢያ ስብስብ',
-                    nameEn: 'Skincare Set',
-                    price: 480,
-                    description: 'የፊት ንጽህና እና እርጥበት ስብስብ ለውበት',
-                    descriptionAm: 'የፊት ንጽህና እና እርጥበት ስብስብ ለውበት',
-                    descriptionEn: 'Facial cleansing and moisturizing set for beauty',
-                    category: 'cosmetics',
-                    image: 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=400&h=300&fit=crop'
-                }, {
-                    id: 'p5',
-                    name: 'የከንፈር ቀለም / Lipstick',
-                    nameAm: 'የከንፈር ቀለም',
-                    nameEn: 'Lipstick',
-                    price: 220,
-                    description: 'ረጅም ጊዜ የሚቆይ የከንፈር ቀለም በተለያዩ ቀለማት',
-                    descriptionAm: 'ረጅም ጊዜ የሚቆይ የከንፈር ቀለም በተለያዩ ቀለማት',
-                    descriptionEn: 'Long-lasting lipstick in various colors',
-                    category: 'cosmetics',
-                    image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400&h=300&fit=crop'
-                }, {
-                    id: 'p6',
-                    name: 'የጆሮ ማዳመጫ / Headphones',
-                    nameAm: 'የጆሮ ማዳመጫ',
-                    nameEn: 'Headphones',
-                    price: 790,
-                    description: 'ጥራት ያለው የጆሮ ማዳመጫ ለሙዚቃ እና ለጥናት',
-                    descriptionAm: 'ጥራት ያለው የጆሮ ማዳመጫ ለሙዚቃ እና ለጥናት',
-                    descriptionEn: 'Quality headphones for music and study',
-                    category: 'electronics',
-                    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=300&fit=crop'
-                }, {
-                    id: 'p7',
-                    name: 'የእጅ ቻርጀር / Power Bank',
-                    nameAm: 'የእጅ ቻርጀር',
-                    nameEn: 'Power Bank',
-                    price: 550,
-                    description: '10000mAh የእጅ ቻርጀር ለስልክ እና ለሌሎች መሳሪያዎች',
-                    descriptionAm: '10000mAh የእጅ ቻርጀር ለስልክ እና ለሌሎች መሳሪያዎች',
-                    descriptionEn: '10000mAh power bank for phone and other devices',
-                    category: 'electronics',
-                    image: 'https://images.unsplash.com/photo-1609592422705-442f05b5db1a?w=400&h=300&fit=crop'
-                }, {
-                    id: 'p8',
-                    name: 'ላፕቶፕ / Laptop',
-                    nameAm: 'ላፕቶፕ',
-                    nameEn: 'Laptop',
-                    price: 28000,
-                    description: 'አዲስ ላፕቶፕ ለትምህርት እና ለስራ',
-                    descriptionAm: 'አዲስ ላፕቶፕ ለትምህርት እና ለስራ',
-                    descriptionEn: 'New laptop for education and work',
-                    category: 'electronics',
-                    image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=300&fit=crop'
-                }];
+                return [
+                    // Initial products will be empty – you'll add them via admin
+                ];
             }
 
             // =========================================================
-            // TRANSLATIONS
+            // TRANSLATIONS (shortened for space)
             // =========================================================
             const translations = {
                 en: {
@@ -1479,7 +1392,7 @@
                     admin_error: 'Invalid password',
                     checkout_title: 'Your order is ready!',
                     checkout_sub: 'Please contact us on Telegram to complete your purchase',
-                    checkout_telegram: '👆 Use this Telegram handle or tap it',
+                    checkout_telegram: '👆 Use this Telegram handle',
                     checkout_items: 'Items',
                     checkout_total: 'Total',
                     checkout_payable: 'Payable',
@@ -1507,12 +1420,10 @@
                     admin_edit: 'Edit',
                     admin_no_products: 'No products in inventory',
                     admin_close: 'Close Admin',
-                    admin_choose_file: 'Choose file',
                     toast_added: 'Added to cart!',
                     toast_updated: 'Product updated!',
                     toast_added_product: 'Product added!',
                     toast_deleted: 'Product deleted!',
-                    toast_cart_cleared: 'Cart cleared!',
                     toast_login_success: 'Welcome Admin!',
                     toast_logout: 'Logged out',
                     product_name: 'Product Name',
@@ -1579,12 +1490,10 @@
                     admin_edit: 'አርትዕ',
                     admin_no_products: 'ምርት የለም',
                     admin_close: 'ዝጋ',
-                    admin_choose_file: 'ፋይል ምረጥ',
                     toast_added: 'ወደ ጋሪ ተጨምሯል!',
                     toast_updated: 'ምርት ተዘምኗል!',
                     toast_added_product: 'ምርት ተጨምሯል!',
                     toast_deleted: 'ምርት ተሰርዟል!',
-                    toast_cart_cleared: 'ጋሪ ተጠርጓል!',
                     toast_login_success: 'እንኳን ደህና መጡ አስተዳዳሪ!',
                     toast_logout: 'ዘግተሃል',
                     product_name: 'የምርት ስም',
@@ -1610,7 +1519,7 @@
             }
 
             // =========================================================
-            // RENDER FUNCTIONS
+            // RENDER FUNCTIONS (shortened)
             // =========================================================
             function renderProducts(category) {
                 const grid = document.getElementById('productGrid');
@@ -1773,13 +1682,6 @@
                 saveCart();
                 renderCart();
                 openCheckout();
-            }
-
-            function clearCart() {
-                cart = [];
-                saveCart();
-                renderCart();
-                showToast(t('toast_cart_cleared'), 'info');
             }
 
             // =========================================================
@@ -2224,7 +2126,6 @@
                 setLanguage(currentLang);
                 loadCart();
 
-                // Start listening to Firebase
                 listenToProducts();
                 listenToSales();
 
@@ -2340,7 +2241,9 @@
                 products: () => products,
                 cart: () => cart,
                 sales: () => sales,
-                clearCart: clearCart,
+                clearCart: () => { cart = [];
+                    saveCart();
+                    renderCart(); },
             };
 
         })();
