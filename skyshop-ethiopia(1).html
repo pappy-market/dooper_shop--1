@@ -2,677 +2,247 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f766e">
-<meta name="description" content="BDU Market — marketplace for Bahir Dar University students">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>BDU Market</title>
-
-<!-- Telegram Mini App SDK -->
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
-:root{
-  --primary:#0f766e;--primary2:#115e59;--accent:#f59e0b;
-  --bg:#f5f7f8;--card:#fff;--text:#102a2a;--muted:#6b7c7c;
-  --line:#e4e9e9;--danger:#dc2626;--success:#15803d;
-  --shadow:0 10px 30px rgba(15,118,110,.08);
-  --radius:18px;
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-body{min-height:100vh}
-button,input,textarea,select{font:inherit}
-button{cursor:pointer;border:0}
-a{text-decoration:none;color:inherit}
-.hidden{display:none!important}
-.app{max-width:720px;margin:auto;min-height:100vh;background:var(--bg)}
-.topbar{position:sticky;top:0;z-index:20;background:rgba(245,247,248,.94);backdrop-filter:blur(14px);padding:14px 16px 10px;border-bottom:1px solid rgba(228,233,233,.75)}
-.brandrow{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.brand{display:flex;align-items:center;gap:10px}
-.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--primary),#18a999);display:grid;place-items:center;color:#fff;font-weight:900;box-shadow:var(--shadow)}
-.brand h1{font-size:18px;margin:0}
-.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}
-.iconbtn{width:40px;height:40px;border-radius:13px;background:var(--card);box-shadow:var(--shadow);font-size:18px}
-.search{margin-top:12px;position:relative}
-.search input{width:100%;height:46px;border:1px solid var(--line);border-radius:15px;background:#fff;padding:0 45px 0 15px;outline:none}
-.search span{position:absolute;right:14px;top:12px;color:var(--muted)}
-main{padding:16px 16px 96px}
-.hero{border-radius:24px;padding:22px;background:linear-gradient(135deg,#0f766e,#134e4a);color:white;overflow:hidden;position:relative;margin-bottom:18px}
-.hero:after{content:"";position:absolute;width:170px;height:170px;border-radius:50%;right:-50px;top:-55px;background:rgba(255,255,255,.10)}
-.hero h2{margin:0 0 7px;font-size:25px;line-height:1.1;max-width:78%}
-.hero p{margin:0;opacity:.86;font-size:13px;max-width:75%;line-height:1.5}
-.hero .heroaction{margin-top:16px;background:white;color:var(--primary);padding:10px 14px;border-radius:12px;font-weight:800}
-.sectionhead{display:flex;align-items:center;justify-content:space-between;margin:20px 0 11px}
-.sectionhead h2{font-size:17px;margin:0}
-.sectionhead button{background:none;color:var(--primary);font-weight:700;font-size:12px}
-.cats{display:flex;gap:9px;overflow:auto;padding-bottom:4px;scrollbar-width:none}
-.cats::-webkit-scrollbar{display:none}
-.cat{white-space:nowrap;padding:10px 13px;border-radius:13px;background:#fff;border:1px solid var(--line);color:#355050;font-weight:700;font-size:12px}
-.cat.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.card{background:#fff;border-radius:18px;overflow:hidden;border:1px solid var(--line);box-shadow:0 4px 16px rgba(0,0,0,.035)}
-.picwrap{aspect-ratio:1/1;position:relative;background:#edf2f2}
-.picwrap img{width:100%;height:100%;object-fit:cover;display:block}
-.badge{position:absolute;left:9px;top:9px;background:rgba(255,255,255,.92);padding:5px 8px;border-radius:9px;font-size:10px;font-weight:800}
-.cardbody{padding:11px}
-.cardname{font-weight:800;font-size:14px;line-height:1.25;min-height:35px}
-.price{font-weight:900;color:var(--primary);margin-top:6px}
-.meta{display:flex;justify-content:space-between;gap:6px;color:var(--muted);font-size:10px;margin-top:5px}
-.add{width:100%;margin-top:9px;background:var(--primary);color:white;border-radius:11px;padding:9px;font-weight:800}
-.add:disabled{background:#aab7b7;cursor:not-allowed}
-.bottomnav{position:fixed;z-index:30;bottom:0;left:50%;transform:translateX(-50%);width:min(720px,100%);display:grid;grid-template-columns:repeat(5,1fr);background:rgba(255,255,255,.96);backdrop-filter:blur(15px);border-top:1px solid var(--line);padding:8px 7px calc(8px + env(safe-area-inset-bottom))}
-.navbtn{background:none;color:#789090;font-size:10px;font-weight:700;display:flex;flex-direction:column;gap:3px;align-items:center}
-.navbtn b{font-size:19px;line-height:1}
-.navbtn.active{color:var(--primary)}
-.count{position:absolute;margin-left:17px;margin-top:-5px;background:var(--danger);color:#fff;border-radius:50%;font-size:9px;min-width:16px;height:16px;display:grid;place-items:center}
-.page{min-height:60vh}
-.detail{background:#fff;border-radius:22px;overflow:hidden;border:1px solid var(--line)}
-.detailimg{width:100%;aspect-ratio:1/1;object-fit:cover;background:#edf2f2}
-.detailbody{padding:18px}
-.back{background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 12px;font-weight:700;margin-bottom:12px}
-.stars{color:#f59e0b;letter-spacing:1px}
-.detail h2{font-size:24px;margin:8px 0}
-.detailprice{font-size:22px;font-weight:900;color:var(--primary)}
-.desc{color:#5f7272;line-height:1.6;font-size:14px;white-space:pre-wrap}
-.qty{display:flex;align-items:center;gap:12px;margin:15px 0}
-.qty button{width:36px;height:36px;border-radius:11px;background:#edf4f3;font-size:20px}
-.qty span{font-weight:900;min-width:20px;text-align:center}
-.primary{background:var(--primary);color:#fff;padding:13px 16px;border-radius:13px;font-weight:900}
-.secondary{background:#edf4f3;color:var(--primary2);padding:13px 16px;border-radius:13px;font-weight:900}
-.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.review{border-top:1px solid var(--line);padding:13px 0}
-.reviewhead{display:flex;justify-content:space-between;font-size:12px;font-weight:800}
-.review p{font-size:13px;color:#5f7272;margin:6px 0 0;line-height:1.45}
-.form{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}
-.field{margin-bottom:13px}
-.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}
-.field input,.field textarea,.field select{width:100%;border:1px solid var(--line);border-radius:12px;padding:11px;outline:none;background:#fff}
-.field textarea{min-height:80px;resize:vertical}
-.summary{background:#f1f7f6;border-radius:15px;padding:13px;margin-bottom:15px}
-.sumrow{display:flex;justify-content:space-between;font-size:13px;margin:5px 0}
-.sumtotal{font-weight:900;font-size:17px;border-top:1px solid #dce8e6;padding-top:8px;margin-top:8px}
-.empty{text-align:center;padding:45px 15px;color:var(--muted)}
-.toast{position:fixed;z-index:100;left:50%;bottom:86px;transform:translateX(-50%) translateY(20px);background:#173333;color:#fff;padding:11px 15px;border-radius:13px;font-size:12px;opacity:0;pointer-events:none;transition:.25s;max-width:90%;text-align:center}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.modal{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.48);display:flex;align-items:flex-end;justify-content:center}
-.sheet{background:#fff;width:min(720px,100%);max-height:92vh;overflow:auto;border-radius:25px 25px 0 0;padding:18px 16px calc(25px + env(safe-area-inset-bottom))}
-.sheettop{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.sheet h2{margin:0;font-size:20px}
-.close{width:36px;height:36px;border-radius:11px;background:#eef2f2}
-.adminbar{display:flex;gap:8px;overflow:auto;margin-bottom:12px}
-.adminbar button{white-space:nowrap;padding:9px 11px;border-radius:11px;background:#fff;border:1px solid var(--line);font-size:12px;font-weight:800}
-.adminbar button.active{background:var(--primary);color:#fff}
-.statgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px}
-.stat strong{font-size:23px;display:block}
-.stat span{font-size:11px;color:var(--muted)}
-.adminlist{display:grid;gap:10px;margin-top:12px}
-.adminitem{background:#fff;border:1px solid var(--line);border-radius:15px;padding:11px;display:flex;gap:10px;align-items:center}
-.adminitem img{width:56px;height:56px;border-radius:11px;object-fit:cover;background:#edf2f2}
-.adminitemmain{flex:1;min-width:0}
-.adminitemmain strong{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.adminitemmain small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
-.adminactions{display:flex;gap:5px}
-.adminactions button{padding:8px;border-radius:9px;background:#eef4f3;font-size:11px}
-.adminactions .danger{color:var(--danger)}
-.notice{padding:11px;border-radius:12px;background:#fff7df;color:#795d11;font-size:12px;line-height:1.5;margin-bottom:12px}
-.filelabel{display:block;border:1px dashed #aabbbb;border-radius:13px;padding:18px;text-align:center;background:#fafcfc;color:#567;cursor:pointer}
-.filelabel input{display:none}
-.preview{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;margin-top:8px}
-.ordercard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px;margin-bottom:10px}
-.orderline{display:flex;justify-content:space-between;gap:10px;font-size:12px;margin:5px 0}
-.status{display:inline-block;padding:5px 8px;border-radius:8px;background:#edf4f3;color:var(--primary2);font-size:10px;font-weight:800}
-.spinner{width:25px;height:25px;border:3px solid #d9e5e4;border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:30px auto}
-@keyframes spin{to{transform:rotate(360deg)}}
-.topactions{display:flex;gap:7px;align-items:center}
-.admin-icon{background:#fff4df;border-color:#f0d39a}
-.am{font-family:"Noto Sans Ethiopic",system-ui,sans-serif}
-@media(min-width:600px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.statgrid{grid-template-columns:repeat(4,1fr)}}
+:root{--bg:#fff;--fg:#111;--muted:#707070;--line:#e5e7eb;--card:#fafafa;--accent:#111;--accent2:#6d5dfc;--accent-fg:#fff;--danger:#d33;--shadow:0 8px 24px rgba(0,0,0,.07);--radius:16px}
+html[data-theme=dark]{--bg:#0b0f14;--fg:#f5f7fa;--muted:#a5afbd;--line:#27313d;--card:#151b23;--accent:#7c5cff;--accent2:#8c7cff;--accent-fg:#fff;--danger:#ff7070;--shadow:0 10px 30px rgba(0,0,0,.3)}
+*{box-sizing:border-box;margin:0;padding:0}html,body{min-height:100%;background:var(--bg);color:var(--fg)}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans Ethiopic",sans-serif;padding-bottom:76px;-webkit-tap-highlight-color:transparent}
+button,input,textarea,select{font:inherit}button{border:0;cursor:pointer}img{display:block;max-width:100%}.hidden{display:none!important}
+header{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1px solid var(--line);padding:13px 16px}
+.head{display:flex;justify-content:space-between;align-items:center;gap:10px}.logo{font-size:21px;font-weight:900;letter-spacing:-.5px;color:var(--accent2)}
+.lang{display:flex;border:1px solid var(--line);border-radius:20px;overflow:hidden;background:var(--card)}.lang button{padding:7px 12px;background:transparent;color:var(--fg);font-size:13px}.lang .on{background:var(--accent);color:#fff}
+.search{display:flex;align-items:center;gap:8px;margin-top:11px;padding:11px 13px;background:var(--card);border:1px solid var(--line);border-radius:14px}.search input{width:100%;border:0;outline:0;background:none;color:var(--fg)}
+.page{display:none}.page.on{display:block}.cats{display:flex;gap:9px;overflow-x:auto;padding:13px 16px;scrollbar-width:none}.cats::-webkit-scrollbar{display:none}.chip{white-space:nowrap;padding:9px 15px;border:1px solid var(--line);border-radius:20px;background:var(--card);color:var(--fg);font-size:13px}.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.section{padding:6px 16px 18px}.title{font-size:17px;margin:6px 0 12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.card{overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);animation:up .35s ease both}.photo{aspect-ratio:1;background:var(--card);overflow:hidden;cursor:pointer}.photo img{width:100%;height:100%;object-fit:cover}.body{padding:10px}.name{font-size:14px;font-weight:800;min-height:37px;line-height:1.3}.price{font-size:15px;font-weight:900;margin-top:5px}.meta{font-size:11px;color:var(--muted);margin-top:4px}.add,.primary{width:100%;padding:10px 12px;border-radius:11px;background:var(--accent);color:#fff;font-weight:800;margin-top:9px}.add:disabled{opacity:.4}.empty{text-align:center;padding:55px 20px;color:var(--muted)}.empty b{display:block;font-size:43px;margin-bottom:10px}
+nav{position:fixed;z-index:60;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--line);display:flex}nav button{position:relative;flex:1;background:transparent;color:var(--muted);padding:9px 0 8px;font-size:10px}nav button.on{color:var(--accent);font-weight:800}.ico{display:block;font-size:20px;margin-bottom:2px}.badge{position:absolute;top:1px;right:20%;background:#e33;color:#fff;border-radius:50%;min-width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center}
+.profile{padding-bottom:20px}.profilehead{display:flex;align-items:center;gap:13px;padding:20px 16px}.avatar{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#6d5dfc,#ff5f8f);color:#fff;font-size:23px;font-weight:900}.link{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer}
+.theme-row{display:flex;align-items:center;justify-content:space-between}.theme-button{width:44px;height:34px;border-radius:17px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:18px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;display:none}.overlay.show{display:block}.sheet{position:fixed;z-index:91;left:0;right:0;bottom:0;max-height:94vh;overflow:auto;background:var(--bg);border-radius:21px 21px 0 0;transform:translateY(105%);transition:transform .25s ease;box-shadow:0 -10px 40px rgba(0,0,0,.2)}.sheet.show{transform:translateY(0)}.handle{width:42px;height:4px;border-radius:4px;background:var(--line);margin:10px auto}.close{position:absolute;right:14px;top:12px;width:32px;height:32px;border-radius:50%;background:var(--card);color:var(--fg)}.detail{padding:16px}.detailimg{width:100%;aspect-ratio:1;object-fit:cover;background:var(--card)}.detail h2{margin-bottom:8px}.detail p{margin:8px 0}.qty{display:flex;align-items:center;gap:18px;margin:15px 0}.qty button,.cartqty button{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+.form{margin-bottom:13px}.form label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px}.form input,.form textarea,.form select{width:100%;padding:11px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--fg);outline:0}.hint{font-size:11px;color:var(--muted);margin-top:5px}.preview img{width:90px;height:90px;object-fit:cover;border-radius:11px;margin-top:8px}
+.cartitem,.adminitem,.order{display:flex;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line)}.cartitem img,.adminitem img{width:68px;height:68px;border-radius:11px;object-fit:cover;background:var(--card)}.info{flex:1}.cartqty{display:flex;align-items:center;gap:8px;margin-top:8px}.remove,.del{color:var(--danger);font-size:12px;cursor:pointer;margin-top:5px}.summary{padding:16px;border-top:1px solid var(--line);background:var(--bg)}.row{display:flex;justify-content:space-between;margin-bottom:7px;font-size:14px}.total{font-size:17px;font-weight:900}
+.tabs{display:flex;gap:7px;overflow-x:auto;padding:0 16px 13px}.tabs button{white-space:nowrap;padding:9px 12px;border-radius:20px;background:var(--card);color:var(--fg);border:1px solid var(--line)}.tabs button.on{background:var(--accent);color:#fff}.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px}.stat{padding:14px;border:1px solid var(--line);border-radius:14px;background:var(--card)}.stat b{display:block;font-size:21px}.stat small{color:var(--muted)}
+.toast{position:fixed;z-index:120;bottom:88px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:10px 17px;border-radius:22px;opacity:0;pointer-events:none;transition:.2s;font-size:13px;max-width:88%;text-align:center}.toast.show{opacity:1}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media(min-width:700px){body,nav,header{max-width:760px;margin-left:auto;margin-right:auto}.grid{grid-template-columns:repeat(3,1fr)}nav{left:50%;right:auto;width:760px;transform:translateX(-50%)}}
 </style>
 </head>
-
 <body>
-<div class="app">
-  <header class="topbar">
-    <div class="brandrow">
-      <div class="brand">
-        <div class="logo">BDU</div>
-        <div><h1>BDU Market</h1><small id="tagline">Campus marketplace</small></div>
-      </div>
-      <div class="topactions">
-        <button class="iconbtn admin-icon" id="adminIconBtn" title="Admin">🔐</button>
-        <button class="iconbtn" id="langBtn" title="Language">አማ</button>
-      </div>
-    </div>
-    <div class="search">
-      <input id="searchInput" placeholder="Search products..." autocomplete="off">
-      <span>⌕</span>
-    </div>
-  </header>
+<header>
+  <div class="head"><div class="logo">BDU Market</div><div class="lang"><button id="en" class="on" onclick="setLang('en')">EN</button><button id="am" onclick="setLang('am')">አማ</button></div></div>
+  <div class="search">🔍<input id="search" placeholder="Search products..." oninput="searchProducts(this.value)"></div>
+</header>
 
-  <main id="main"></main>
-
-  <nav class="bottomnav">
-    <button class="navbtn active" data-page="home"><b>⌂</b><span data-i18n="home">Home</span></button>
-    <button class="navbtn" data-page="categories"><b>▦</b><span data-i18n="categories">Categories</span></button>
-    <button class="navbtn" data-page="cart"><b>🛒<i class="count hidden" id="cartCount">0</i></b><span data-i18n="cart">Cart</span></button>
-    <button class="navbtn" data-page="orders"><b>▤</b><span data-i18n="orders">Orders</span></button>
-    <button class="navbtn" data-page="profile"><b>◉</b><span data-i18n="profile">Profile</span></button>
-  </nav>
-</div>
-
-<div id="modalRoot"></div>
-<div class="toast" id="toast"></div>
-
-<script type="module">
-/* ============================================================
-   BDU MARKET — SINGLE FILE TELEGRAM MINI APP
-   Firebase backend: Firestore + Storage + Authentication
-   ============================================================ */
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import {
-  getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc,
-  getDocs, getDoc, query, where, orderBy, limit, onSnapshot, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
-import {
-  getAuth, signInWithEmailAndPassword, signInAnonymously, onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
-import {
-  getStorage, ref, uploadBytes, getDownloadURL, deleteObject
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
-
-/* ---------- YOUR FIREBASE CONFIG FROM THE SCREENSHOT ---------- */
-const firebaseConfig = {
-  apiKey: "AIzaSyA0y_Sd6xLDZjBJTSyfDRtd4XgnPS0dKoc",
-  authDomain: "dooper-shop-fce54.firebaseapp.com",
-  projectId: "dooper-shop-fce54",
-  storageBucket: "dooper-shop-fce54.firebasestorage.app",
-  messagingSenderId: "38979650471",
-  appId: "1:38979650471:web:04992462cbcf8666ba6c82",
-  measurementId: "G-KTQZCDP1HT"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
-const storage = getStorage(app);
-
-const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
-  try { tg.setHeaderColor("#f5f7f8"); tg.setBackgroundColor("#f5f7f8"); } catch(e){}
-}
-
-const SELLER_USERNAME = "sky_dooper";
-const ADMIN_COLLECTION = "admins";
-
-/*
-  BDU MARKET ADMIN QUICK-ACCESS PASSWORD
-  Requested by the owner.
-
-  IMPORTANT: because this is a GitHub Pages HTML file, anything placed here
-  can be inspected by users. This password is therefore only a UI gate.
-  Firebase Authentication + the /admins/{uid} document remain the real
-  backend authorization layer.
-*/
-const OWNER_ADMIN_PASSWORD = "281888$";
-const state = {
-  lang: localStorage.getItem("bdu_lang") || "en",
-  page: "home",
-  products: [],
-  categories: [],
-  reviews: [],
-  orders: [],
-  cart: JSON.parse(localStorage.getItem("bdu_cart") || "[]"),
-  selectedProduct: null,
-  search: "",
-  category: "",
-  admin: false,
-  adminTab: "dashboard",
-  currentUser: null,
-  editingProduct: null,
-  imageFile: null
-};
-
-const T = {
-  en: {
-    tagline:"Campus marketplace",home:"Home",categories:"Categories",cart:"Cart",orders:"Orders",profile:"Profile",
-    search:"Search products...",popular:"Popular on campus",new:"New arrivals",featured:"Featured",all:"All",
-    add:"Add to cart",buy:"Buy now",details:"Product details",back:"Back",description:"Description",
-    reviews:"Reviews",noReviews:"No reviews yet.",stock:"In stock",out:"Out of stock",quantity:"Quantity",
-    total:"Total",subtotal:"Subtotal",checkout:"Checkout",emptyCart:"Your cart is empty.",
-    browse:"Browse products",order:"Place order",name:"Full name",studentId:"University ID",
-    username:"Telegram username",dorm:"Dorm / Block",room:"Room number",phone:"Phone number",
-    notes:"Order notes",required:"Required",contact:"Contact seller",orderPlaced:"Order placed!",
-    orderNo:"Order number",status:"Status",pending:"Pending",confirmed:"Confirmed",preparing:"Preparing",
-    ready:"Ready",delivered:"Delivered",cancelled:"Cancelled",noOrders:"No orders yet.",
-    profileTitle:"Your profile",telegram:"Telegram",admin:"Admin",adminLogin:"Admin login",
-    email:"Admin email",password:"Password",login:"Login",logout:"Logout",dashboard:"Dashboard",
-    products:"Products",categoriesAdmin:"Categories",addProduct:"Add product",edit:"Edit",delete:"Delete",
-    save:"Save",cancel:"Cancel",productName:"Product name",amName:"Amharic name",
-    price:"Price (ETB)",descEn:"English description",descAm:"Amharic description",stockQty:"Stock quantity",
-    image:"Product image",upload:"Upload image",active:"Available",featuredFlag:"Featured",
-    category:"Category",newCategory:"New category",categoryNameEn:"Category name (English)",
-    categoryNameAm:"Category name (Amharic)",addCategory:"Add category",noProducts:"No products found.",
-    lowStock:"Low stock",ordersAdmin:"Orders",reviewsAdmin:"Reviews",saveChanges:"Save changes",
-    confirmDelete:"Delete this product?",adminDenied:"Admin access denied.",loginFailed:"Login failed.",
-    loading:"Loading...",error:"Something went wrong.",chooseCategory:"Choose category",language:"Language",
-    clear:"Clear",orderInfo:"Order information",openSeller:"Open Telegram"
-  },
-  am: {
-    tagline:"የካምፓስ ገበያ",home:"መነሻ",categories:"ምድቦች",cart:"ጋሪ",orders:"ትዕዛዞች",profile:"መገለጫ",
-    search:"ምርቶችን ፈልግ...",popular:"በካምፓስ ተወዳጅ",new:"አዲስ ምርቶች",featured:"ተመራጭ",all:"ሁሉም",
-    add:"ወደ ጋሪ ጨምር",buy:"አሁን ግዛ",details:"የምርት ዝርዝር",back:"ተመለስ",description:"መግለጫ",
-    reviews:"ግምገማዎች",noReviews:"እስካሁን ግምገማ የለም።",stock:"በክምችት አለ",out:"ክምችት አልቋል",quantity:"ብዛት",
-    total:"ጠቅላላ",subtotal:"ንዑስ ድምር",checkout:"መክፈያ",emptyCart:"ጋሪዎ ባዶ ነው።",
-    browse:"ምርቶችን ይመልከቱ",order:"ትዕዛዝ አስገባ",name:"ሙሉ ስም",studentId:"የዩኒቨርሲቲ መታወቂያ",
-    username:"የTelegram ስም",dorm:"ዶርም / ብሎክ",room:"የክፍል ቁጥር",phone:"ስልክ ቁጥር",notes:"የትዕዛዝ ማስታወሻ",
-    required:"አስፈላጊ",contact:"ሻጩን ያነጋግሩ",orderPlaced:"ትዕዛዝዎ ተልኳል!",orderNo:"የትዕዛዝ ቁጥር",
-    status:"ሁኔታ",pending:"በመጠባበቅ ላይ",confirmed:"ተረጋግጧል",preparing:"በማዘጋጀት ላይ",
-    ready:"ዝግጁ",delivered:"ተሰጥቷል",cancelled:"ተሰርዟል",noOrders:"እስካሁን ትዕዛዝ የለም።",
-    profileTitle:"መገለጫዎ",telegram:"Telegram",admin:"አስተዳዳሪ",adminLogin:"የአስተዳዳሪ መግቢያ",
-    email:"የአስተዳዳሪ ኢሜይል",password:"የይለፍ ቃል",login:"ግባ",logout:"ውጣ",dashboard:"ዳሽቦርድ",
-    products:"ምርቶች",categoriesAdmin:"ምድቦች",addProduct:"ምርት ጨምር",edit:"አርትዕ",delete:"ሰርዝ",
-    save:"አስቀምጥ",cancel:"ሰርዝ",productName:"የምርት ስም",amName:"የአማርኛ ስም",
-    price:"ዋጋ (ETB)",descEn:"የእንግሊዝኛ መግለጫ",descAm:"የአማርኛ መግለጫ",stockQty:"የክምችት ብዛት",
-    image:"የምርት ምስል",upload:"ምስል ጫን",active:"ይገኛል",featuredFlag:"ተመራጭ",
-    category:"ምድብ",newCategory:"አዲስ ምድብ",categoryNameEn:"የምድብ ስም (እንግሊዝኛ)",
-    categoryNameAm:"የምድብ ስም (አማርኛ)",addCategory:"ምድብ ጨምር",noProducts:"ምርት አልተገኘም።",
-    lowStock:"አነስተኛ ክምችት",ordersAdmin:"ትዕዛዞች",reviewsAdmin:"ግምገማዎች",saveChanges:"ለውጥ አስቀምጥ",
-    confirmDelete:"ይህን ምርት ሰርዝ?",adminDenied:"የአስተዳዳሪ ፍቃድ የለዎትም።",loginFailed:"መግባት አልተቻለም።",
-    loading:"በመጫን ላይ...",error:"ችግር ተፈጥሯል።",chooseCategory:"ምድብ ይምረጡ",language:"ቋንቋ",
-    clear:"አጽዳ",orderInfo:"የትዕዛዝ መረጃ",openSeller:"Telegram ክፈት"
-  }
-};
-
-function t(k){return T[state.lang][k] || T.en[k] || k}
-function esc(s=""){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function money(n){return new Intl.NumberFormat("en-US").format(Number(n)||0)+" ETB"}
-function nameOf(p){return state.lang==="am" ? (p.nameAm||p.nameEn||"") : (p.nameEn||p.nameAm||"")}
-function descOf(p){return state.lang==="am" ? (p.descriptionAm||p.descriptionEn||"") : (p.descriptionEn||p.descriptionAm||"")}
-function catName(c){return state.lang==="am" ? (c.nameAm||c.nameEn) : (c.nameEn||c.nameAm)}
-function stars(r=0){let n=Math.round(Number(r)||0);return "★★★★★".split("").map((x,i)=>i<n?"★":"☆").join("")}
-function showToast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>el.classList.remove("show"),2500)}
-function tgUser(){
-  const u=tg?.initDataUnsafe?.user;
-  return u || null;
-}
-function saveCart(){localStorage.setItem("bdu_cart",JSON.stringify(state.cart));updateCartCount()}
-function updateCartCount(){const n=state.cart.reduce((a,x)=>a+x.qty,0),el=document.getElementById("cartCount");el.textContent=n;el.classList.toggle("hidden",!n)}
-function setPage(p){state.page=p;state.category="";document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.page===p));render()}
-function setModal(html){document.getElementById("modalRoot").innerHTML=html}
-function closeModal(){document.getElementById("modalRoot").innerHTML=""}
-
-function productMatches(p){
-  const q=state.search.toLowerCase().trim();
-  if(!p.active) return false;
-  if(state.category && p.category!==state.category) return false;
-  if(!q) return true;
-  return [p.nameEn,p.nameAm,p.descriptionEn,p.descriptionAm,p.categoryName].join(" ").toLowerCase().includes(q);
-}
-
-function productCard(p){
-  const qtyInCart=state.cart.find(x=>x.id===p.id)?.qty||0;
-  return `<article class="card" onclick="window.openProduct('${p.id}')">
-    <div class="picwrap">
-      <img loading="lazy" src="${esc(p.imageUrl||"https://placehold.co/600x600?text=BDU+Market")}" alt="${esc(nameOf(p))}">
-      ${p.featured?`<span class="badge">✨ ${esc(t("featured"))}</span>`:""}
-    </div>
-    <div class="cardbody">
-      <div class="cardname">${esc(nameOf(p))}</div>
-      <div class="price">${money(p.price)}</div>
-      <div class="meta"><span>${stars(p.rating||0)} ${Number(p.rating||0).toFixed(1)}</span><span>${Number(p.stock||0)>0?t("stock"):t("out")}</span></div>
-      <button class="add" ${Number(p.stock||0)<=0?"disabled":""} onclick="event.stopPropagation();window.addToCart('${p.id}')">${qtyInCart?`+ ${t("add")} (${qtyInCart})`:t("add")}</button>
-    </div>
-  </article>`;
-}
-
-function renderHome(){
-  const featured=state.products.filter(p=>p.active&&p.featured).slice(0,6);
-  const newest=[...state.products].filter(p=>p.active).sort((a,b)=>(b.createdAtMs||0)-(a.createdAtMs||0)).slice(0,8);
-  const list=state.products.filter(productMatches);
-  return `<section class="page">
-    <div class="hero">
-      <h2>${state.lang==="am"?"በካምፓስ ላይ የሚፈልጉትን ያግኙ":"Everything you need, right on campus."}</h2>
-      <p>${state.lang==="am"?"ለባህር ዳር ዩኒቨርሲቲ ተማሪዎች የተዘጋጀ ገበያ።":"A student-first marketplace for Bahir Dar University."}</p>
-      <button class="heroaction" onclick="window.setPage('categories')">${t("browse")} →</button>
-    </div>
-    <div class="sectionhead"><h2>${t("categories")}</h2></div>
-    <div class="cats"><button class="cat active" onclick="window.filterCat('')">${t("all")}</button>${state.categories.filter(c=>c.active!==false).map(c=>`<button class="cat" onclick="window.filterCat('${c.id}')">${esc(catName(c))}</button>`).join("")}</div>
-    ${featured.length?`<div class="sectionhead"><h2>✨ ${t("featured")}</h2></div><div class="grid">${featured.map(productCard).join("")}</div>`:""}
-    <div class="sectionhead"><h2>🔥 ${t("popular")}</h2><button onclick="window.setPage('categories')">${t("all")}</button></div>
-    <div class="grid">${(list.length?list:newest).slice(0,8).map(productCard).join("") || `<div class="empty" style="grid-column:1/-1">${t("noProducts")}</div>`}</div>
-    <div class="sectionhead"><h2>🆕 ${t("new")}</h2></div>
-    <div class="grid">${newest.map(productCard).join("") || `<div class="empty" style="grid-column:1/-1">${t("noProducts")}</div>`}</div>
-  </section>`;
-}
-
-function renderCategories(){
-  return `<section class="page"><div class="sectionhead"><h2>${t("categories")}</h2></div>
-  <div class="grid">${state.categories.filter(c=>c.active!==false).map(c=>{
-    const count=state.products.filter(p=>p.active&&p.category===c.id).length;
-    return `<button class="card" style="padding:20px;text-align:left" onclick="window.filterCat('${c.id}')">
-      <div style="font-size:30px">${esc(c.icon||"🛍️")}</div><strong style="display:block;margin-top:10px">${esc(catName(c))}</strong>
-      <small style="color:var(--muted)">${count} ${state.lang==="am"?"ምርቶች":"products"}</small>
-    </button>`;
-  }).join("")}</div></section>`;
-}
-
-function renderCart(){
-  const items=state.cart.map(x=>({...x,p:state.products.find(p=>p.id===x.id)})).filter(x=>x.p);
-  if(!items.length)return `<section class="page empty"><div style="font-size:50px">🛒</div><h2>${t("emptyCart")}</h2><button class="primary" onclick="window.setPage('home')">${t("browse")}</button></section>`;
-  const total=items.reduce((a,x)=>a+(Number(x.p.price)||0)*x.qty,0);
-  return `<section class="page"><div class="sectionhead"><h2>${t("cart")}</h2><button onclick="window.clearCart()">${t("clear")}</button></div>
-    ${items.map(x=>`<div class="ordercard"><div class="orderline"><strong>${esc(nameOf(x.p))}</strong><b>${money(x.p.price*x.qty)}</b></div>
-      <div class="orderline"><span>${money(x.p.price)} × ${x.qty}</span>
-      <span><button class="secondary" style="padding:5px 9px" onclick="window.changeQty('${x.id}',-1)">−</button>
-      <button class="secondary" style="padding:5px 9px" onclick="window.changeQty('${x.id}',1)">+</button>
-      <button class="secondary" style="padding:5px 9px" onclick="window.removeCart('${x.id}')">×</button></span></div>
-    </div>`).join("")}
-    <div class="summary"><div class="sumrow"><span>${t("subtotal")}</span><b>${money(total)}</b></div><div class="sumrow sumtotal"><span>${t("total")}</span><b>${money(total)}</b></div></div>
-    <button class="primary" style="width:100%" onclick="window.openCheckout()">${t("checkout")} →</button>
-  </section>`;
-}
-
-function renderOrders(){
-  const u=tgUser();
-  const uid=u?.id ? String(u.id) : "";
-  const mine=state.orders.filter(o=>(uid&&o.telegramId===uid)||(u?.username&&o.telegramUsername===u.username));
-  if(!mine.length)return `<section class="page empty"><div style="font-size:48px">📦</div><h2>${t("noOrders")}</h2><button class="primary" onclick="window.setPage('home')">${t("browse")}</button></section>`;
-  return `<section class="page"><div class="sectionhead"><h2>${t("orders")}</h2></div>${mine.sort((a,b)=>(b.createdAtMs||0)-(a.createdAtMs||0)).map(o=>`
-  <div class="ordercard"><div class="orderline"><strong>#${esc(o.orderNo)}</strong><span class="status">${esc(t(o.status||"pending"))}</span></div>
-  ${o.items.map(i=>`<div class="orderline"><span>${esc(i.name)} × ${i.qty}</span><b>${money(i.price*i.qty)}</b></div>`).join("")}
-  <div class="orderline"><b>${t("total")}</b><b>${money(o.total)}</b></div>
-  <small style="color:var(--muted)">${o.createdAtMs?new Date(o.createdAtMs).toLocaleString():""}</small>
-  </div>`).join("")}</section>`;
-}
-
-function renderProfile(){
-  const u=tgUser();
-  return `<section class="page"><div class="form">
-    <div style="text-align:center;padding:10px"><div class="logo" style="margin:auto;width:65px;height:65px;font-size:20px">${esc((u?.first_name||"S").slice(0,2).toUpperCase())}</div>
-    <h2>${esc([u?.first_name,u?.last_name].filter(Boolean).join(" ")||"BDU Student")}</h2>
-    <p style="color:var(--muted)">${u?.username?"@"+esc(u.username):"Telegram"}</p></div>
-    <div class="notice">🛍️ ${state.lang==="am"?"BDU Market በባህር ዳር ዩኒቨርሲቲ ተማሪዎች ግዢን ቀላል ለማድረግ ተዘጋጅቷል።":"BDU Market is built to make campus shopping easier for Bahir Dar University students."}</div>
-    <button class="secondary" style="width:100%;margin-bottom:9px" onclick="window.openSeller()">💬 ${t("contact")}</button>
-    <button class="secondary" style="width:100%" onclick="window.openAdminLogin()">🔐 ${t("admin")}</button>
-  </div></section>`;
-}
-
-function render(){
-  document.documentElement.lang=state.lang;
-  document.getElementById("tagline").textContent=t("tagline");
-  document.getElementById("searchInput").placeholder=t("search");
-  document.getElementById("langBtn").textContent=state.lang==="en"?"አማ":"EN";
-  updateCartCount();
-  let html="";
-  if(state.page==="home")html=renderHome();
-  else if(state.page==="categories")html=renderCategories();
-  else if(state.page==="cart")html=renderCart();
-  else if(state.page==="orders")html=renderOrders();
-  else if(state.page==="profile")html=renderProfile();
-  else if(state.page==="admin")html=renderAdmin();
-  document.getElementById("main").innerHTML=html;
-}
-
-function renderAdmin(){
-  if(!state.admin)return `<section class="page empty"><h2>${t("adminDenied")}</h2></section>`;
-  const tab=state.adminTab;
-  return `<section class="page">
-    <div class="sectionhead"><h2>⚙️ ${t("admin")}</h2><button onclick="window.adminLogout()">${t("logout")}</button></div>
-    <div class="adminbar">
-      ${["dashboard","products","categories","orders","reviews"].map(x=>`<button class="${tab===x?"active":""}" onclick="window.adminTab('${x}')">${esc(t(x==="orders"? "ordersAdmin":x==="reviews"?"reviewsAdmin":x))}</button>`).join("")}
-    </div>
-    ${tab==="dashboard"?adminDashboard():tab==="products"?adminProducts():tab==="categories"?adminCategories():tab==="orders"?adminOrders():adminReviews()}
-  </section>`;
-}
-
-function adminDashboard(){
-  const pending=state.orders.filter(o=>o.status==="pending").length;
-  const low=state.products.filter(p=>p.active&&Number(p.stock||0)<=5).length;
-  const revenue=state.orders.filter(o=>o.status!=="cancelled").reduce((a,o)=>a+(Number(o.total)||0),0);
-  return `<div class="statgrid">
-    <div class="stat"><strong>${state.products.length}</strong><span>${t("products")}</span></div>
-    <div class="stat"><strong>${state.orders.length}</strong><span>${t("ordersAdmin")}</span></div>
-    <div class="stat"><strong>${pending}</strong><span>${t("pending")}</span></div>
-    <div class="stat"><strong>${low}</strong><span>${t("lowStock")}</span></div>
-  </div><div class="form" style="margin-top:12px"><div class="sumrow"><span>${t("total")}</span><b>${money(revenue)}</b></div>
-  <button class="primary" style="width:100%;margin-top:12px" onclick="window.editProduct()">${t("addProduct")} ＋</button></div>`;
-}
-
-function adminProducts(){
-  return `<div class="form"><button class="primary" style="width:100%" onclick="window.editProduct()">${t("addProduct")} ＋</button></div>
-  <div class="adminlist">${state.products.map(p=>`<div class="adminitem">
-    <img src="${esc(p.imageUrl||"https://placehold.co/100?text=BDU")}" alt="">
-    <div class="adminitemmain"><strong>${esc(nameOf(p))}</strong><small>${money(p.price)} · ${Number(p.stock||0)} stock · ${p.active===false?"Hidden":"Active"}</small></div>
-    <div class="adminactions"><button onclick="window.editProduct('${p.id}')">${t("edit")}</button><button class="danger" onclick="window.deleteProduct('${p.id}')">🗑</button></div>
-  </div>`).join("")}</div>`;
-}
-
-function adminCategories(){
-  return `<div class="form">
-    <h3 style="margin-top:0">${t("newCategory")}</h3>
-    <div class="field"><label>${t("categoryNameEn")}</label><input id="newCatEn"></div>
-    <div class="field"><label>${t("categoryNameAm")}</label><input id="newCatAm"></div>
-    <div class="field"><label>Icon / Emoji</label><input id="newCatIcon" placeholder="📚"></div>
-    <button class="primary" onclick="window.addCategory()">${t("addCategory")}</button>
+<section id="home" class="page on">
+  <div id="cats" class="cats"></div>
+  <div class="section"><h2 class="title" data-i="featured">Featured</h2><div id="featured" class="grid"></div></div>
+  <div class="section"><h2 class="title" data-i="popular">Popular</h2><div id="popular" class="grid"></div></div>
+  <div class="section"><h2 class="title" data-i="new">New Products</h2><div id="new" class="grid"></div></div>
+</section>
+<section id="categories" class="page"><div id="cats2" class="cats"></div><div class="section"><div id="catProducts" class="grid"></div></div></section>
+<section id="cart" class="page"><div id="cartList"></div><div id="cartSummary"></div></section>
+<section id="orders" class="page"><div id="ordersList"></div></section>
+<section id="profile" class="page">
+  <div class="profile">
+    <div class="profilehead"><div id="avatar" class="avatar">S</div><div><b id="pname">Student</b><div id="puser" style="color:var(--muted);font-size:12px">@telegram</div></div></div>
+    <div class="link" onclick="goPage('orders')"><span data-i="myOrders">My Orders</span>›</div>
+    <div class="link" onclick="setLang(currentLang==='en'?'am':'en')"><span data-i="language">Language</span><span id="langvalue">English</span></div>
+    <div class="link theme-row" onclick="toggleTheme()"><span data-i="theme">Theme</span><button class="theme-button" id="themeIcon" aria-label="Change theme">🌙</button></div>
+    <div class="link" onclick="openAdminLogin()"><span data-i="admin">Admin Panel</span>›</div>
   </div>
-  <div class="adminlist">${state.categories.map(c=>`<div class="adminitem"><div style="font-size:28px">${esc(c.icon||"🛍️")}</div>
-    <div class="adminitemmain"><strong>${esc(c.nameEn)}</strong><small>${esc(c.nameAm||"")}</small></div>
-    <div class="adminactions"><button onclick="window.toggleCategory('${c.id}',${c.active!==false})">${c.active===false?"Show":"Hide"}</button><button class="danger" onclick="window.deleteCategory('${c.id}')">🗑</button></div>
-  </div>`).join("")}</div>`;
+</section>
+<section id="checkout" class="page">
+  <div class="section"><h2>Checkout</h2></div><div id="checkoutSummary" class="summary"></div>
+  <div class="section">
+    <div class="form"><label>Full Name</label><input id="name"></div>
+    <div class="form"><label>University ID</label><input id="uid"></div>
+    <div class="form"><label>Telegram Username</label><input id="tg"></div>
+    <div class="form"><label>Dorm / Block</label><input id="dorm"></div>
+    <div class="form"><label>Room Number</label><input id="room"></div>
+    <div class="form"><label>Phone Number</label><input id="phone" type="tel"></div>
+    <div class="form"><label>Order Notes</label><textarea id="notes" rows="3"></textarea></div>
+    <button class="primary" onclick="placeOrder()">Place Order</button>
+  </div>
+</section>
+<section id="confirm" class="page"><div class="empty"><b>✅</b><h2>Order Placed!</h2><p id="orderNo"></p><button class="primary" onclick="contactSeller()">Contact Seller on Telegram</button><button class="primary" style="background:transparent;color:var(--fg);border:1px solid var(--line)" onclick="goPage('home')">Continue Shopping</button></div></section>
+
+<section id="admin" class="page">
+  <div class="section"><h2>BDU Market Admin</h2><div style="color:var(--muted);font-size:12px;margin-top:4px" id="adminEmail"></div></div>
+  <div class="tabs">
+    <button id="td" class="on" onclick="adminTab('dash')">Dashboard</button>
+    <button id="tp" onclick="adminTab('products')">Products</button>
+    <button id="tc" onclick="adminTab('categories')">Categories</button>
+    <button id="to" onclick="adminTab('orders')">Orders</button>
+    <button onclick="adminLogout()">Logout</button>
+  </div>
+  <div id="dash"><div id="stats" class="stats"></div></div>
+  <div id="products" class="hidden"><div class="section"><button class="primary" onclick="productForm()">＋ Add Product</button></div><div id="adminProducts"></div></div>
+  <div id="categories" class="hidden"><div class="section"><button class="primary" onclick="categoryForm()">＋ Add Category</button></div><div id="adminCategories"></div></div>
+  <div id="orders" class="hidden"><div id="adminOrders"></div></div>
+</section>
+
+<nav>
+  <button class="on" data-p="home" onclick="goPage('home')"><span class="ico">🏠</span>Home</button>
+  <button data-p="categories" onclick="goPage('categories')"><span class="ico">🗂️</span>Categories</button>
+  <button data-p="cart" onclick="goPage('cart')"><span class="ico">🛒</span>Cart <i id="count" class="badge hidden">0</i></button>
+  <button data-p="orders" onclick="goPage('orders')"><span class="ico">📦</span>Orders</button>
+  <button data-p="profile" onclick="goPage('profile')"><span class="ico">👤</span>Profile</button>
+</nav>
+
+<div id="detailO" class="overlay" onclick="closeSheet('detailS','detailO')"></div>
+<div id="detailS" class="sheet"><div class="handle"></div><button class="close" onclick="closeSheet('detailS','detailO')">✕</button><img id="dimg" class="detailimg"><div class="detail"><h2 id="dname"></h2><h2 id="dprice"></h2><p id="dmeta" style="color:var(--muted)"></p><p id="ddesc" style="line-height:1.5;color:var(--muted)"></p><div class="qty"><button onclick="detailQty(-1)">−</button><b id="dq">1</b><button onclick="detailQty(1)">＋</button></div><button class="primary" onclick="detailCart()">Add to Cart</button><button class="primary" onclick="detailBuy()">Buy Now</button></div></div>
+
+<div id="loginO" class="overlay" onclick="closeSheet('loginS','loginO')"></div>
+<div id="loginS" class="sheet"><div class="handle"></div><button class="close" onclick="closeSheet('loginS','loginO')">✕</button><div class="detail"><h2>Admin Login</h2><p style="color:var(--muted);font-size:12px;margin-bottom:14px">Enter the administrator email and password.</p><div class="form"><label>Email</label><input id="email" type="email" autocomplete="username"></div><div class="form"><label>Password</label><input id="pass" type="password" autocomplete="current-password"></div><button class="primary" id="loginBtn" onclick="adminLogin()">Login</button></div></div>
+
+<div id="productO" class="overlay" onclick="closeSheet('productS','productO')"></div>
+<div id="productS" class="sheet"><div class="handle"></div><button class="close" onclick="closeSheet('productS','productO')">✕</button><div class="detail">
+<h2 id="ftitle">Add Product</h2>
+<div class="form"><label>Name (English)</label><input id="pn"></div>
+<div class="form"><label>Name (Amharic)</label><input id="pna"></div>
+<div class="form"><label>Price (ETB)</label><input id="pp" type="number" min="0"></div>
+<div class="form"><label>Category</label><select id="pc"></select></div>
+<div class="form"><label>Stock</label><input id="ps" type="number" min="0"></div>
+<div class="form"><label>Description (English)</label><textarea id="pd" rows="3"></textarea></div>
+<div class="form"><label>Description (Amharic)</label><textarea id="pda" rows="3"></textarea></div>
+<div class="form"><label>Product Image URL</label><input id="imageUrlInput" type="url" placeholder="https://example.com/image.jpg"><div class="hint">Paste a direct image URL. No Firebase Storage upload is used.</div><div id="preview" class="preview"></div></div>
+<div class="form"><label><input id="feat" type="checkbox"> Featured</label><label><input id="active" type="checkbox" checked> Active / Visible</label></div>
+<button id="save" class="primary" onclick="saveProduct()">Save Product</button>
+</div></div>
+
+<div id="catO" class="overlay" onclick="closeSheet('catS','catO')"></div>
+<div id="catS" class="sheet"><div class="handle"></div><button class="close" onclick="closeSheet('catS','catO')">✕</button><div class="detail"><h2 id="ctitle">Add Category</h2><div class="form"><label>Name (English)</label><input id="cn"></div><div class="form"><label>Name (Amharic)</label><input id="cna"></div><div class="form"><label><input id="ca" type="checkbox" checked> Active</label></div><button class="primary" onclick="saveCategory()">Save Category</button></div></div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const firebaseConfig={apiKey:"AIzaSyA0y_sD6xlDZjBJTSyFdRtd4XgnPSoDKoc",authDomain:"dooper-shop-fce54.firebaseapp.com",projectId:"dooper-shop-fce54",storageBucket:"dooper-shop-fce54.firebasestorage.app",messagingSenderId:"38979650471",appId:"1:38979650471:web:04992462cbcf8666ba6c82"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore(),auth=firebase.auth();
+const tgapp=window.Telegram?.WebApp;if(tgapp){tgapp.ready();tgapp.expand()}
+const tguser=tgapp?.initDataUnsafe?.user||null,SELLER="sky_dooper";
+const $=id=>document.getElementById(id);
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money=x=>Number(x||0).toLocaleString()+" ETB";
+const imageOf=p=>p?.imageUrl||p?.images?.[0]||"https://placehold.co/600x600?text=BDU+Market";
+const productName=p=>currentLang==="am"?(p.nameAm||p.nameEn):(p.nameEn||p.nameAm);
+const timeOf=x=>x?.toMillis?x.toMillis():x?.seconds?x.seconds*1000:new Date(x||0).getTime();
+
+let currentLang=localStorage.getItem("bduLang")||"en";
+let theme=localStorage.getItem("bduTheme")||"light";
+let products=[],cats=[],cart=JSON.parse(localStorage.getItem("bduCart")||"[]"),current=null,detailQuantity=1,editId=null,editCat=null,activeCat="all",term="",isAdmin=false,lastMessage="";
+
+const T={
+en:{search:"Search products...",featured:"Featured",popular:"Popular",new:"New Products",myOrders:"My Orders",language:"Language",admin:"Admin Panel",theme:"Theme"},
+am:{search:"ምርቶችን ይፈልጉ...",featured:"ተለይተው የቀረቡ",popular:"ተወዳጅ",new:"አዲስ ምርቶች",myOrders:"ትዕዛዞቼ",language:"ቋንቋ",admin:"የአስተዳዳሪ ገጽ",theme:"ገጽታ"}
+};
+function toast(x){$("toast").textContent=x;$("toast").classList.add("show");clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>$("toast").classList.remove("show"),2500)}
+function applyTheme(){document.documentElement.dataset.theme=theme;$("themeIcon").textContent=theme==="dark"?"☀️":"🌙"}
+function toggleTheme(){theme=theme==="dark"?"light":"dark";localStorage.setItem("bduTheme",theme);applyTheme()}
+function setLang(x){currentLang=x;localStorage.setItem("bduLang",x);$("en").classList.toggle("on",x==="en");$("am").classList.toggle("on",x==="am");$("search").placeholder=T[x].search;$("langvalue").textContent=x==="en"?"English":"አማርኛ";document.querySelectorAll("[data-i]").forEach(e=>e.textContent=T[x][e.dataset.i]);render()}
+function goPage(id){
+  if(id==="admin"&&!isAdmin){openAdminLogin();return}
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("on"));$(id).classList.add("on");
+  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x.dataset.p===id));
+  if(id==="cart")renderCart();if(id==="orders")loadOrders();window.scrollTo(0,0)
+}
+function sheet(s,o){$(o).classList.add("show");$(s).classList.add("show")}
+function closeSheet(s,o){$(s).classList.remove("show");$(o).classList.remove("show")}
+function categoryName(id){let c=cats.find(x=>x.id===id);return c?(currentLang==="am"?(c.nameAm||c.nameEn):(c.nameEn||c.nameAm)):""}
+function filtered(){let q=term.toLowerCase();return products.filter(p=>{let text=[p.nameEn,p.nameAm,p.descriptionEn,p.descriptionAm].join(" ").toLowerCase();return !q||text.includes(q)})}
+function categoryHTML(){let h=`<button class="chip ${activeCat==="all"?"on":""}" onclick="filterCat('all')">${currentLang==="en"?"All":"ሁሉም"}</button>`;h+=cats.map(c=>`<button class="chip ${activeCat===c.id?"on":""}" onclick="filterCat('${c.id}')">${esc(currentLang==="am"?(c.nameAm||c.nameEn):(c.nameEn||c.nameAm))}</button>`).join("");$("cats").innerHTML=h;$("cats2").innerHTML=h}
+function filterCat(id){activeCat=id;categoryHTML();let a=filtered().filter(p=>id==="all"||p.category===id);draw("catProducts",a);goPage("categories")}
+function draw(id,list){
+  let e=$(id);if(!list.length){e.innerHTML='<div class="empty" style="grid-column:1/-1"><b>🛍️</b>No products found</div>';return}
+  e.innerHTML=list.map(p=>`<div class="card"><div class="photo" onclick="openProduct('${p.id}')"><img src="${esc(imageOf(p))}" onerror="this.src='https://placehold.co/600x600?text=No+Image'"></div><div class="body"><div class="name">${esc(productName(p))}</div><div class="price">${money(p.price)}</div><div class="meta">${Number(p.stock||0)>0?"In stock":"Out of stock"} · ${esc(categoryName(p.category))}</div><button class="add" ${p.stock>0?"":"disabled"} onclick="addToCart('${p.id}',1)">＋ Add to Cart</button></div></div>`).join("")
+}
+function render(){
+  categoryHTML();let a=filtered();let featured=a.filter(p=>p.featured),popular=[...a].sort((x,y)=>(y.views||0)-(x.views||0)).slice(0,6),newp=[...a].sort((x,y)=>timeOf(y.createdAt)-timeOf(x.createdAt)).slice(0,6);
+  draw("featured",featured.length?featured:a.slice(0,6));draw("popular",popular);draw("new",newp);draw("catProducts",a.filter(p=>activeCat==="all"||p.category===activeCat));updateCount()
+}
+function searchProducts(v){term=v.trim();render()}
+function updateCount(){let n=cart.reduce((s,x)=>s+x.qty,0);$("count").textContent=n;$("count").classList.toggle("hidden",!n);localStorage.setItem("bduCart",JSON.stringify(cart))}
+function addToCart(id,q){let p=products.find(x=>x.id===id);if(!p||Number(p.stock||0)<=0)return;let x=cart.find(x=>x.id===id);if(x)x.qty=Math.min(Number(p.stock),x.qty+q);else cart.push({id,qty:q});updateCount();toast("Added to cart")}
+function changeCart(id,n){let x=cart.find(x=>x.id===id),p=products.find(x=>x.id===id);if(!x)return;x.qty+=n;if(x.qty<=0)cart=cart.filter(y=>y.id!==id);else x.qty=Math.min(Number(p?.stock||x.qty),x.qty);updateCount();renderCart()}
+function removeCart(id){cart=cart.filter(x=>x.id!==id);updateCount();renderCart()}
+function renderCart(){
+  let rows=cart.map(i=>({i,p:products.find(p=>p.id===i.id)})).filter(x=>x.p);
+  if(!rows.length){$("cartList").innerHTML='<div class="empty"><b>🛒</b>Your cart is empty</div>';$("cartSummary").innerHTML="";return}
+  $("cartList").innerHTML=rows.map(x=>`<div class="cartitem"><img src="${esc(imageOf(x.p))}"><div class="info"><b>${esc(productName(x.p))}</b><div class="meta">${money(x.p.price)} × ${x.i.qty}</div><div class="cartqty"><button onclick="changeCart('${x.p.id}',-1)">−</button><span>${x.i.qty}</span><button onclick="changeCart('${x.p.id}',1)">＋</button></div><div class="remove" onclick="removeCart('${x.p.id}')">Remove</div></div></div>`).join("");
+  let total=rows.reduce((s,x)=>s+Number(x.p.price||0)*x.i.qty,0);$("cartSummary").innerHTML=`<div class="summary"><div class="row"><span>Subtotal</span><b>${money(total)}</b></div><div class="row total"><span>Total</span><b>${money(total)}</b></div><button class="primary" onclick="goPage('checkout');checkout()">Checkout</button></div>`
+}
+function openProduct(id){current=products.find(p=>p.id===id);if(!current)return;detailQuantity=1;$("dimg").src=imageOf(current);$("dname").textContent=productName(current);$("dprice").textContent=money(current.price);$("dmeta").textContent=`Stock: ${current.stock||0} · ${categoryName(current.category)}`;$("ddesc").textContent=currentLang==="am"?(current.descriptionAm||current.descriptionEn||""):(current.descriptionEn||current.descriptionAm||"");$("dq").textContent=1;sheet("detailS","detailO");db.collection("products").doc(id).update({views:firebase.firestore.FieldValue.increment(1)}).catch(()=>{})}
+function detailQty(n){detailQuantity=Math.max(1,Math.min(Number(current?.stock||1),detailQuantity+n));$("dq").textContent=detailQuantity}
+function detailCart(){addToCart(current.id,detailQuantity);closeSheet("detailS","detailO")}
+function detailBuy(){addToCart(current.id,detailQuantity);closeSheet("detailS","detailO");goPage("checkout");checkout()}
+function checkout(){let total=cart.reduce((s,i)=>{let p=products.find(x=>x.id===i.id);return s+Number(p?.price||0)*i.qty},0);$("checkoutSummary").innerHTML=`<div class="row"><span>Total</span><b>${money(total)}</b></div>`;if(tguser){$("name").value=[tguser.first_name,tguser.last_name].filter(Boolean).join(" ");$("tg").value=tguser.username?"@"+tguser.username:""}}
+async function placeOrder(){
+  if(!cart.length){toast("Cart is empty");return}
+  let required=["name","uid","dorm","room","phone"];if(required.some(id=>!$(id).value.trim())){toast("Please fill all required fields");return}
+  let items=cart.map(i=>{let p=products.find(x=>x.id===i.id);return{productId:p.id,nameEn:p.nameEn,nameAm:p.nameAm,price:Number(p.price),qty:i.qty,imageUrl:imageOf(p)}}),total=items.reduce((s,x)=>s+x.price*x.qty,0),no="BDU-"+Date.now().toString().slice(-8);
+  let o={orderNumber:no,userId:auth.currentUser?.uid||null,telegramId:tguser?.id||null,customer:{name:$("name").value.trim(),universityId:$("uid").value.trim(),telegramUsername:$("tg").value.trim(),dorm:$("dorm").value.trim(),room:$("room").value.trim(),phone:$("phone").value.trim(),notes:$("notes").value.trim()},items,total,status:"pending",createdAt:firebase.firestore.FieldValue.serverTimestamp()};
+  try{await db.collection("orders").doc(no).set(o);lastMessage=`BDU Market Order ${no}\nCustomer: ${o.customer.name}\nID: ${o.customer.universityId}\nDorm: ${o.customer.dorm}\nRoom: ${o.customer.room}\nPhone: ${o.customer.phone}\n\n${items.map(x=>`${x.nameEn} x ${x.qty}`).join("\n")}\n\nTotal: ${money(total)}`;cart=[];updateCount();$("orderNo").textContent=no;goPage("confirm");contactSeller()}catch(e){toast(e.message)}
+}
+function contactSeller(){let u=`https://t.me/${SELLER}?text=${encodeURIComponent(lastMessage)}`;if(tgapp?.openTelegramLink)tgapp.openTelegramLink(u);else window.open(u,"_blank")}
+async function loadOrders(){
+  try{let q=tguser?db.collection("orders").where("telegramId","==",tguser.id):db.collection("orders").where("userId","==",auth.currentUser?.uid||"");let s=await q.get(),a=s.docs.map(d=>d.data()).sort((x,y)=>timeOf(y.createdAt)-timeOf(x.createdAt));$("ordersList").innerHTML=a.length?a.map(o=>`<div class="order"><div><b>${esc(o.orderNumber)}</b><div class="meta">${(o.items||[]).map(i=>esc(i.nameEn)+" × "+i.qty).join(", ")}</div><div style="margin-top:5px">${money(o.total)}</div><small>${esc(o.status||"pending")}</small></div></div>`).join(""):'<div class="empty"><b>📦</b>No orders yet</div>'}catch(e){$("ordersList").innerHTML='<div class="empty">Unable to load orders</div>'}
 }
 
-function adminOrders(){
-  return `<div class="adminlist">${state.orders.sort((a,b)=>(b.createdAtMs||0)-(a.createdAtMs||0)).map(o=>`
-    <div class="ordercard"><div class="orderline"><strong>#${esc(o.orderNo)}</strong><select onchange="window.changeOrderStatus('${o.id}',this.value)">
-      ${["pending","confirmed","preparing","ready","delivered","cancelled"].map(s=>`<option value="${s}" ${o.status===s?"selected":""}>${t(s)}</option>`).join("")}</select></div>
-      <div class="orderline"><span>${esc(o.customer?.name||"")} · ${esc(o.telegramUsername?"@"+o.telegramUsername:"")}</span><b>${money(o.total)}</b></div>
-      <div class="orderline"><span>${esc(o.customer?.dorm||"")} / ${esc(o.customer?.room||"")}</span><span>${esc(o.customer?.phone||"")}</span></div>
-      ${o.items.map(i=>`<div class="orderline"><span>${esc(i.name)} × ${i.qty}</span><span>${money(i.price*i.qty)}</span></div>`).join("")}
-    </div>`).join("") || `<div class="empty">${t("noOrders")}</div>`}</div>`;
+/* ADMIN: Firebase Email/Password + admins/{uid}.active === true */
+function openAdminLogin(){if(isAdmin){goPage("admin");return}sheet("loginS","loginO")}
+async function adminLogin(){
+  let email=$("email").value.trim(),pass=$("pass").value,btn=$("loginBtn");if(!email||!pass){toast("Enter email and password");return}
+  btn.disabled=true;try{
+    let cred=await auth.signInWithEmailAndPassword(email,pass),snap=await db.collection("admins").doc(cred.user.uid).get();
+    if(!snap.exists||snap.data().active!==true){await auth.signOut();throw new Error("This account is not an active admin")}
+    isAdmin=true;$("adminEmail").textContent=cred.user.email||email;closeSheet("loginS","loginO");goPage("admin");adminTab("dash");toast("Admin login successful")
+  }catch(e){toast("Login failed: "+e.message)}finally{btn.disabled=false}
 }
+async function adminLogout(){try{await auth.signOut()}finally{isAdmin=false;goPage("profile");toast("Logged out")}}
+function adminTab(x){if(!isAdmin){openAdminLogin();return}["dash","products","categories","orders"].forEach(y=>$(y).classList.add("hidden"));$(x).classList.remove("hidden");document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("on"));let map={dash:"td",products:"tp",categories:"tc",orders:"to"};if(map[x])$(map[x]).classList.add("on");if(x==="dash")loadStats();if(x==="products")adminProductsLoad();if(x==="categories")adminCatsLoad();if(x==="orders")adminOrdersLoad()}
+async function loadStats(){try{let [p,o,r]=await Promise.all([db.collection("products").get(),db.collection("orders").get(),db.collection("reviews").get()]),ps=p.docs.map(x=>x.data()),os=o.docs.map(x=>x.data());$("stats").innerHTML=[["Products",ps.length],["Active",ps.filter(x=>x.active).length],["Orders",os.length],["Pending",os.filter(x=>x.status==="pending").length],["Revenue",money(os.filter(x=>x.status!=="cancelled").reduce((s,x)=>s+Number(x.total||0),0))],["Reviews",r.size],["Low Stock",ps.filter(x=>Number(x.stock||0)>0&&Number(x.stock||0)<=3).length]].map(x=>`<div class="stat"><b>${x[1]}</b><small>${x[0]}</small></div>`).join("")}catch(e){toast(e.message)}}
+async function adminProductsLoad(){try{let s=await db.collection("products").get();window.ap=s.docs.map(d=>({id:d.id,...d.data()}));$("adminProducts").innerHTML=window.ap.length?window.ap.map(p=>`<div class="adminitem"><img src="${esc(imageOf(p))}"><div class="info"><b>${esc(p.nameEn||p.nameAm)}</b><div class="meta">${money(p.price)} · stock ${p.stock||0} · ${p.active?"Active":"Hidden"}</div><div><button onclick="productForm('${p.id}')">Edit</button> <button class="del" onclick="deleteProduct('${p.id}')">Delete</button></div></div></div>`).join(""):'<div class="empty">No products</div>'}catch(e){toast(e.message)}}
+async function adminCatsLoad(){try{let s=await db.collection("categories").get();window.ac=s.docs.map(d=>({id:d.id,...d.data()}));$("adminCategories").innerHTML=window.ac.length?window.ac.map(c=>`<div class="adminitem"><div class="info"><b>${esc(c.nameEn||c.nameAm)}</b><div class="meta">${esc(c.nameAm||"")} · ${c.active?"Active":"Hidden"}</div><button onclick="categoryForm('${c.id}')">Edit</button> <button class="del" onclick="deleteCategory('${c.id}')">Delete</button></div></div>`).join(""):'<div class="empty">No categories</div>'}catch(e){toast(e.message)}}
+async function adminOrdersLoad(){try{let s=await db.collection("orders").get(),a=s.docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>timeOf(y.createdAt)-timeOf(x.createdAt));$("adminOrders").innerHTML=a.length?a.map(o=>`<div class="order"><div style="width:100%"><b>${esc(o.orderNumber||o.id)}</b><div class="meta">${esc(o.customer?.name||"")} · ${esc(o.customer?.phone||"")}</div><p style="margin:7px 0">${(o.items||[]).map(i=>esc(i.nameEn||i.nameAm)+" × "+i.qty).join(", ")}</p><b>${money(o.total)}</b><select onchange="changeOrderStatus('${o.id}',this.value)" style="width:100%;margin-top:8px;padding:9px;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:9px">${["pending","confirmed","ready","completed","cancelled"].map(s=>`<option ${o.status===s?"selected":""}>${s}</option>`).join("")}</select></div></div>`).join(""):'<div class="empty">No orders</div>'}catch(e){toast(e.message)}}
+async function changeOrderStatus(id,s){try{await db.collection("orders").doc(id).update({status:s});toast("Order updated")}catch(e){toast(e.message)}}
 
-function adminReviews(){
-  return `<div class="adminlist">${state.reviews.map(r=>`<div class="ordercard"><div class="reviewhead"><span>${esc(r.userName||"Student")}</span><span class="stars">${stars(r.rating)}</span></div><small style="color:var(--muted)">${esc(r.productName||"")}</small><p>${esc(r.comment||"")}</p></div>`).join("")||`<div class="empty">${t("noReviews")}</div>`}</div>`;
+function productForm(id=null){
+  editId=id;$("ftitle").textContent=id?"Edit Product":"Add Product";$("imageUrlInput").value="";$("preview").innerHTML="";$("pc").innerHTML=(window.ac||cats).map(c=>`<option value="${c.id}">${esc(c.nameEn||c.nameAm)}</option>`).join("");
+  ["pn","pna","pp","pd","pda"].forEach(x=>$(x).value="");$("ps").value=0;$("feat").checked=false;$("active").checked=true;
+  if(id){let p=(window.ap||[]).find(x=>x.id===id);if(!p)return;$("pn").value=p.nameEn||"";$("pna").value=p.nameAm||"";$("pp").value=p.price??"";$("pc").value=p.category||"";$("ps").value=p.stock??0;$("pd").value=p.descriptionEn||"";$("pda").value=p.descriptionAm||"";$("feat").checked=!!p.featured;$("active").checked=!!p.active;let u=p.imageUrl||p.images?.[0]||"";$("imageUrlInput").value=u;if(u)$("preview").innerHTML=`<img src="${esc(u)}">`}
+  sheet("productS","productO")
 }
-
-/* ---------- DATA ---------- */
-async function seedDefaults(){
-  if(!state.admin || !state.currentUser) return;
-  const snap=await getDocs(collection(db,"categories"));
-  if(snap.empty){
-    const defaults=[
-      {nameEn:"Educational Materials",nameAm:"የትምህርት እቃዎች",icon:"📚",active:true},
-      {nameEn:"Cosmetics & Beauty",nameAm:"ኮስሜቲክስ እና ውበት",icon:"💄",active:true},
-      {nameEn:"Electronics",nameAm:"ኤሌክትሮኒክስ",icon:"🎧",active:true},
-      {nameEn:"Stationery",nameAm:"የጽሕፈት መሳሪያዎች",icon:"✏️",active:true},
-      {nameEn:"Other",nameAm:"ሌሎች",icon:"🛍️",active:true}
-    ];
-    for(const c of defaults) await addDoc(collection(db,"categories"),{...c,createdAt:serverTimestamp()});
-  }
-}
-
-function subscribeData(){
-  onSnapshot(collection(db,"categories"),snap=>{
-    state.categories=snap.docs.map(d=>({id:d.id,...d.data()}));
-    render();
-  },e=>console.warn("categories",e));
-
-  onSnapshot(query(collection(db,"products"),orderBy("createdAt","desc")),snap=>{
-    state.products=snap.docs.map(d=>{
-      const x=d.data(); return {id:d.id,...x,createdAtMs:x.createdAt?.toMillis?.()||0};
-    });
-    render();
-  },async e=>{
-    console.warn("products ordered query failed; retrying simple query",e);
-    const s=await getDocs(collection(db,"products"));
-    state.products=s.docs.map(d=>({id:d.id,...d.data()}));
-    render();
-  });
-
-  onSnapshot(query(collection(db,"orders"),orderBy("createdAt","desc"),limit(100)),snap=>{
-    state.orders=snap.docs.map(d=>{const x=d.data();return{id:d.id,...x,createdAtMs:x.createdAt?.toMillis?.()||0}});
-    render();
-  },()=>{});
-  onSnapshot(query(collection(db,"reviews"),orderBy("createdAt","desc"),limit(200)),snap=>{
-    state.reviews=snap.docs.map(d=>({id:d.id,...d.data()}));
-    render();
-  },()=>{});
-}
-
-async function init(){
-  render();
-  subscribeData();
+$("imageUrlInput").addEventListener("input",e=>{let u=e.target.value.trim();$("preview").innerHTML=u?`<img src="${esc(u)}" onerror="this.style.opacity=.35">`:""})
+async function saveProduct(){
+  if(!isAdmin){toast("Admin login required");return}
+  let btn=$("save");btn.disabled=true;
   try{
-    if(!auth.currentUser) await signInAnonymously(auth);
-  }catch(e){
-    console.warn("Enable Anonymous Authentication in Firebase.",e);
-  }
+    let url=$("imageUrlInput").value.trim(),d={nameEn:$("pn").value.trim(),nameAm:$("pna").value.trim(),price:Number($("pp").value||0),category:$("pc").value||null,stock:Number($("ps").value||0),descriptionEn:$("pd").value.trim(),descriptionAm:$("pda").value.trim(),featured:$("feat").checked,active:$("active").checked,imageUrl:url,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+    if(!d.nameEn&&!d.nameAm)throw new Error("Enter product name");if(d.price<0||d.stock<0)throw new Error("Price and stock cannot be negative");
+    if(editId)await db.collection("products").doc(editId).update(d);else{d.createdAt=firebase.firestore.FieldValue.serverTimestamp();d.views=0;await db.collection("products").add(d)}
+    closeSheet("productS","productO");toast("Product saved");await loadData();adminProductsLoad()
+  }catch(e){toast(e.message)}finally{btn.disabled=false}
 }
-init();
+async function deleteProduct(id){if(!isAdmin)return;if(!confirm("Delete product?"))return;try{await db.collection("products").doc(id).delete();toast("Deleted");await adminProductsLoad();await loadData()}catch(e){toast(e.message)}}
+function categoryForm(id=null){editCat=id;$("ctitle").textContent=id?"Edit Category":"Add Category";$("cn").value="";$("cna").value="";$("ca").checked=true;if(id){let c=(window.ac||[]).find(x=>x.id===id);if(c){$("cn").value=c.nameEn||"";$("cna").value=c.nameAm||"";$("ca").checked=!!c.active}}sheet("catS","catO")}
+async function saveCategory(){if(!isAdmin)return toast("Admin login required");let d={nameEn:$("cn").value.trim(),nameAm:$("cna").value.trim(),active:$("ca").checked,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};if(!d.nameEn&&!d.nameAm)return toast("Enter category name");try{if(editCat)await db.collection("categories").doc(editCat).update(d);else{d.createdAt=firebase.firestore.FieldValue.serverTimestamp();await db.collection("categories").add(d)}closeSheet("catS","catO");toast("Category saved");await loadData();adminCatsLoad()}catch(e){toast(e.message)}}
+async function deleteCategory(id){if(!isAdmin)return;if(!confirm("Delete category?"))return;try{await db.collection("categories").doc(id).delete();toast("Deleted");await loadData();adminCatsLoad()}catch(e){toast(e.message)}}
 
-/* ---------- STUDENT ACTIONS ---------- */
-window.setPage=setPage;
-window.filterCat=(id)=>{state.category=id;state.page="home";document.querySelectorAll(".navbtn").forEach(b=>b.classList.toggle("active",b.dataset.page==="home"));render()};
-window.openProduct=(id)=>{
-  const p=state.products.find(x=>x.id===id); if(!p)return;
-  state.selectedProduct=p;
-  setModal(`<div class="modal" onclick="if(event.target===this)window.closeModal()"><div class="sheet">
-    <div class="sheettop"><button class="back" onclick="window.closeModal()">← ${t("back")}</button><button class="close" onclick="window.closeModal()">×</button></div>
-    <div class="detail"><img class="detailimg" src="${esc(p.imageUrl||"https://placehold.co/600?text=BDU")}" alt="">
-      <div class="detailbody"><div class="stars">${stars(p.rating||0)} <span style="color:var(--muted);font-size:12px">${Number(p.rating||0).toFixed(1)} (${p.reviewCount||0})</span></div>
-      <h2>${esc(nameOf(p))}</h2><div class="detailprice">${money(p.price)}</div>
-      <p class="desc">${esc(descOf(p)||t("description"))}</p>
-      <div style="color:var(--muted);font-size:12px">${Number(p.stock||0)>0?"✓ "+t("stock")+": "+p.stock:t("out")}</div>
-      <div class="qty"><button onclick="window.detailQty(-1)">−</button><span id="detailQty">1</span><button onclick="window.detailQty(1)">+</button></div>
-      <div class="actions"><button class="secondary" onclick="window.addDetailCart()">${t("add")}</button><button class="primary" onclick="window.buyDetail()">${t("buy")}</button></div>
-      </div>
-    </div>
-    <div class="sectionhead"><h2>⭐ ${t("reviews")}</h2></div>
-    ${renderReviews(p.id)}
-    <button class="secondary" style="width:100%;margin-top:10px" onclick="window.openReview('${p.id}')">⭐ ${state.lang==="am"?"ግምገማ ጻፍ":"Write a review"}</button>
-  </div></div>`);
-};
-function renderReviews(pid){
-  const rs=state.reviews.filter(r=>r.productId===pid);
-  if(!rs.length)return `<div class="empty" style="padding:20px">${t("noReviews")}</div>`;
-  return rs.slice(0,20).map(r=>`<div class="review"><div class="reviewhead"><span>${esc(r.userName||"Student")}</span><span class="stars">${stars(r.rating)}</span></div><p>${esc(r.comment||"")}</p></div>`).join("");
+async function loadData(){
+  try{let [p,c]=await Promise.all([db.collection("products").where("active","==",true).get(),db.collection("categories").where("active","==",true).get()]);products=p.docs.map(d=>({id:d.id,...d.data()}));cats=c.docs.map(d=>({id:d.id,...d.data()}));render()}
+  catch(e){console.error(e);toast("Could not load products: "+e.message)}
 }
-window.closeModal=closeModal;
-window.detailQty=(d)=>{const el=document.getElementById("detailQty");let n=Math.max(1,Math.min(99,(Number(el.textContent)||1)+d));el.textContent=n};
-window.addDetailCart=()=>{const n=Number(document.getElementById("detailQty")?.textContent||1);window.addToCart(state.selectedProduct.id,n);closeModal()};
-window.buyDetail=()=>{const n=Number(document.getElementById("detailQty")?.textContent||1);window.addToCart(state.selectedProduct.id,n);closeModal();window.openCheckout()};
-window.addToCart=(id,qty=1)=>{
-  const p=state.products.find(x=>x.id===id);if(!p||Number(p.stock||0)<=0)return showToast(t("out"));
-  const found=state.cart.find(x=>x.id===id);
-  const max=Number(p.stock||99);
-  if(found)found.qty=Math.min(max,found.qty+qty);else state.cart.push({id,qty:Math.min(max,qty)});
-  saveCart();showToast("✓ "+t("add"));render();
-};
-window.changeQty=(id,d)=>{
-  const x=state.cart.find(a=>a.id===id),p=state.products.find(a=>a.id===id);if(!x)return;
-  x.qty=Math.max(0,Math.min(Number(p?.stock||99),x.qty+d));if(!x.qty)state.cart=state.cart.filter(a=>a.id!==id);saveCart();render();
-};
-window.removeCart=(id)=>{state.cart=state.cart.filter(x=>x.id!==id);saveCart();render()};
-window.clearCart=()=>{state.cart=[];saveCart();render()};
-
-window.openCheckout=()=>{
-  const items=state.cart.map(x=>({...x,p:state.products.find(p=>p.id===x.id)})).filter(x=>x.p);
-  if(!items.length)return;
-  const u=tgUser();const uname=u?.username||"";
-  const total=items.reduce((a,x)=>a+x.p.price*x.qty,0);
-  setModal(`<div class="modal"><div class="sheet"><div class="sheettop"><h2>${t("checkout")}</h2><button class="close" onclick="window.closeModal()">×</button></div>
-  <div class="summary">${items.map(x=>`<div class="sumrow"><span>${esc(nameOf(x.p))} × ${x.qty}</span><b>${money(x.p.price*x.qty)}</b></div>`).join("")}<div class="sumrow sumtotal"><span>${t("total")}</span><b>${money(total)}</b></div></div>
-  <form id="checkoutForm" class="form">
-    ${["name","studentId","username","dorm","room","phone"].map(k=>`<div class="field"><label>${t(k)} *</label><input name="${k}" ${k==="username"&&uname?`value="@${esc(uname)}"`:""} ${k==="username"&&uname?"readonly":""} required></div>`).join("")}
-    <div class="field"><label>${t("notes")}</label><textarea name="notes"></textarea></div>
-    <button class="primary" style="width:100%" type="submit">${t("order")} ✓</button>
-  </form></div></div>`);
-  document.getElementById("checkoutForm").onsubmit=async e=>{
-    e.preventDefault();const fd=new FormData(e.target);const customer=Object.fromEntries(fd.entries());
-    const orderNo="BDU-"+Date.now().toString(36).toUpperCase();
-    const order={orderNo,ownerUid:auth.currentUser?.uid||"",telegramId:u?.id?String(u.id):"",telegramUsername:u?.username||customer.username.replace(/^@/,""),
-      customer,items:items.map(x=>({id:x.p.id,name:nameOf(x.p),price:Number(x.p.price),qty:x.qty})),total,status:"pending",createdAt:serverTimestamp()};
-    try{
-      await addDoc(collection(db,"orders"),order);
-      state.cart=[];saveCart();closeModal();setPage("orders");
-      setModal(`<div class="modal"><div class="sheet"><div class="form" style="text-align:center"><div style="font-size:55px">🎉</div><h2>${t("orderPlaced")}</h2><p>${t("orderNo")}: <b>${orderNo}</b></p><p style="color:var(--muted)">Your order was saved. Contact the seller to confirm availability and payment/delivery.</p><button class="primary" style="width:100%;margin-bottom:8px" onclick="window.openSeller()">${t("contact")} @${SELLER_USERNAME}</button><button class="secondary" style="width:100%" onclick="window.closeModal()">${t("back")}</button></div></div></div>`);
-    }catch(err){console.error(err);showToast(t("error"))}
-  };
-};
-
-window.openReview=(pid)=>{
-  const u=tgUser();
-  setModal(`<div class="modal"><div class="sheet"><div class="sheettop"><h2>⭐ ${t("reviews")}</h2><button class="close" onclick="window.closeModal()">×</button></div>
-  <form id="reviewForm" class="form"><div class="field"><label>Rating</label><select name="rating"><option value="5">★★★★★ 5</option><option value="4">★★★★☆ 4</option><option value="3">★★★☆☆ 3</option><option value="2">★★☆☆☆ 2</option><option value="1">★☆☆☆☆ 1</option></select></div>
-  <div class="field"><label>Comment</label><textarea name="comment" required minlength="2"></textarea></div><button class="primary" style="width:100%">${state.lang==="am"?"ላክ":"Submit review"}</button></form></div></div>`);
-  document.getElementById("reviewForm").onsubmit=async e=>{
-    e.preventDefault();const fd=new FormData(e.target);
-    try{
-      await addDoc(collection(db,"reviews"),{productId:pid,productName:nameOf(state.products.find(p=>p.id===pid)||{}),rating:Number(fd.get("rating")),comment:fd.get("comment"),ownerUid:auth.currentUser?.uid||"",userId:u?.id?String(u.id):"",userName:[u?.first_name,u?.last_name].filter(Boolean).join(" ")||"Student",createdAt:serverTimestamp()});
-      closeModal();showToast("✓ "+(state.lang==="am"?"ግምገማው ተልኳል":"Review submitted"));
-    }catch(err){console.error(err);showToast(t("error"))}
-  };
-};
-
-window.openSeller=()=>{const url="https://t.me/"+SELLER_USERNAME; if(tg?.openTelegramLink)tg.openTelegramLink(url);else window.open(url,"_blank")};
-
-/* ---------- ADMIN ---------- */
-window.openAdminLogin=()=>{
-  setModal(`<div class="modal"><div class="sheet"><div class="sheettop"><h2>🔐 ${t("adminLogin")}</h2><button class="close" onclick="window.closeModal()">×</button></div>
-  <div class="notice">Owner access: enter the BDU Market admin password first. Firebase still verifies the administrator account before database changes are allowed.</div>
-  <form id="ownerGateForm" class="form">
-    <div class="field"><label>Admin password</label><input type="password" name="ownerPassword" autocomplete="current-password" required autofocus></div>
-    <button class="primary" style="width:100%">🔓 Continue to Admin</button>
-  </form></div></div>`);
-
-  document.getElementById("ownerGateForm").onsubmit=async e=>{
-    e.preventDefault();
-    const fd=new FormData(e.target);
-    if(fd.get("ownerPassword")!==OWNER_ADMIN_PASSWORD){
-      showToast(state.lang==="am"?"የአስተዳዳሪ ይለፍ ቃል ልክ አይደለም":"Incorrect admin password");
-      return;
-    }
-
-    // Password is only the first gate. Do not trust it for Firestore authorization.
-    if(state.admin){
-      closeModal();
-      state.page="admin";
-      render();
-      return;
-    }
-
-    setModal(`<div class="modal"><div class="sheet"><div class="sheettop"><h2>🛡️ Firebase Admin Verification</h2><button class="close" onclick="window.closeModal()">×</button></div>
-    <div class="notice">Use the administrator email/password you created in Firebase Authentication. This second step protects the actual database and image uploads.</div>
-    <form id="firebaseLoginForm" class="form">
-      <div class="field"><label>${t("email")}</label><input type="email" name="email" required></div>
-      <div class="field"><label>${t("password")}</label><input type="password" name="password" required></div>
-      <button class="primary" style="width:100%">🔓 ${t("login")}</button>
-    </form></div></div>`);
-
-    document.getElementById("firebaseLoginForm").onsubmit=async ev=>{
-      ev.preventDefault();
-      const f=new FormData(ev.target);
-      try{
-        await signInWithEmailAndPassword(auth,f.get("email"),f.get("password"));
-        closeModal();
-        state.page="admin";
-        render();
-      }catch(err){
-        console.error(err);
-        showToast(t("loginFailed"));
-      }
-    };
-  };
-};
-
-
-
-
-
-
-  
-
+auth.onAuthStateChanged(u=>{
+  if(u&&isAdmin){$("adminEmail").textContent=u.email||""}
+  if(tguser){$("pname").textContent=[tguser.first_name,tguser.last_name].filter(Boolean).join(" ")||"Student";$("puser").textContent=tguser.username?"@"+tguser.username:"@telegram";$("avatar").textContent=(tguser.first_name||"S")[0].toUpperCase()}
+});
+applyTheme();setLang(currentLang);loadData();updateCount();
+</script>
+</body>
+</html>
